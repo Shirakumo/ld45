@@ -4,9 +4,12 @@
     (make-rectangle 1 1))
 
 (define-shader-entity wall (vertex-entity located-entity solid)
-  ((size :initarg :size :initform (vec 256 64) :accessor size)
+  ((size :initform (vec 256 64) :accessor size)
    (bsize :initform (vec 128 32) :accessor bsize)
    (vertex-array :initform (asset 'ld45 'unit))))
+
+(defmethod initialize-instance :after ((wall wall) &key size)
+  (setf (size wall) (or size (size wall))))
 
 (defmethod (setf size) :after (size (wall wall))
   (vsetf (bsize wall) (/ (vx size) 2) (/ (vy size) 2)))
