@@ -38,6 +38,13 @@
   (enter (make-instance 'player) world)
   (change-class world 'world))
 
+(defgeneric update-scene-cache (entity scene)
+  (:method (entity scene) nil))
+
+(defmethod update-scene-cache ((world world) (scene scene))
+  (for:for ((entity over +world+))
+    (update-scene-cache entity scene)))
+
 (defmethod load-world ((world world))
   (load-world (packet world)))
 

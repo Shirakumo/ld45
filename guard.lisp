@@ -43,6 +43,9 @@
 (defmethod enter :after ((guard guard) (scene scene))
   (update-scene-cache (viewcone guard) scene))
 
+(defmethod update-scene-cache ((guard guard) (scene scene))
+  (update-scene-cache (viewcone guard) scene))
+
 (defmethod register-object-for-pass :after (pass (guard guard))
   (register-object-for-pass pass (viewcone guard)))
 

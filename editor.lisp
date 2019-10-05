@@ -86,7 +86,8 @@
     (:delete
      (let ((entity (entity-at-point (world-location pos) +world+)))
        (leave entity *scene*)
-       (setf (mode active-editor) :select)))
+       (setf (mode active-editor) :select)
+       (update-scene-cache +world+ +world+)))
     (:place-wall
      (let* ((location (nvalign (world-location pos) +grid-size+))
             (wall (make-instance 'wall
@@ -116,7 +117,8 @@
             (size (size entity)))
        (when (or (zerop (vx size))
                  (zerop (vy size)))
-         (leave entity *scene*)))
+         (leave entity *scene*)
+         (update-scene-cache +world+ +world+)))
      (setf (mode active-editor) :select))))
 
 (define-handler (active-editor mouse-move) (ev pos)
@@ -127,13 +129,15 @@
             (start-location (start-location active-editor))
             (size (v- location start-location)))
        (setf (size entity) (vabs size))
-       (setf (location entity) (v- location (v/ size 2)))))
+       (setf (location entity) (v- location (v/ size 2)))
+       (update-scene-cache +world+ +world+)))
     (:moving
      (let* ((entity (entity active-editor))
             (bsize (bsize entity)))
        (setf (location (entity active-editor))
              (v+ (nvalign (v- (world-location pos) bsize) +grid-size+)
-                 bsize))))))
+                 bsize)))
+     (update-scene-cache +world+ +world+))))
 
 (define-handler (active-editor mouse-scroll) (ev delta)
   (when (or (retained 'key :control)
