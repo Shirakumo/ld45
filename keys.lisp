@@ -20,6 +20,15 @@
 (define-action place-guard (editor-command)
   (key-press (one-of key :f7)))
 
+(define-action loop-guard-path (editor-command)
+  (key-press (one-of key :l)))
+
+(define-action reverse-guard-path (editor-command)
+  (key-press (one-of key :r)))
+
+(define-action finish-guard-path (editor-command)
+  (key-press (one-of key :enter)))
+
 (define-action save-world (editor-command)
   (key-press (one-of key :f1)))
 
