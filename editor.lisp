@@ -6,6 +6,7 @@
   ((name :initform :editor)
    (entity :initform nil :accessor entity)
    (mode :initform :select :accessor mode)
+   (vel :initform (vec 0 0) :accessor vel)
    (start-location :initform nil :accessor start-location)
    (visible-path :initform nil :accessor visible-path)))
 
@@ -135,7 +136,8 @@
                  bsize))))))
 
 (define-handler (active-editor tick) (ev)
-  (update-visible-path active-editor))
+  (update-visible-path active-editor)
+  (update-editor-location active-editor))
 
 ;;; Placing guards
 
@@ -173,6 +175,26 @@
       (setf (mode active-editor) :select)
       (when (plusp (length (route guard)))
         (setf (state guard) :patrol)))))
+
+;;; Zooming and moving the camera
+
+(define-handler (active-editor mouse-scroll) (ev delta)
+  (when (or (retained 'key :control)
+            (retained 'key :left-control) (retained 'key :control-l)
+            (retained 'key :right-control) (retained 'key :control-r))
+    (let ((camera (unit :camera *scene*)))
+      (setf (zoom camera) (* (zoom camera) (if (< 0 delta) 1.5 (/ 1.5)))))))
+
+(defun update-editor-location (editor)
+  (let ((speed (/ 20 (zoom (unit :camera *scene*)))))
+    (cond ((retained 'movement :left) (setf (vx (vel editor)) (- speed)))
+          ((retained 'movement :right) (setf (vx (vel editor)) (+ speed)))
+          (T (setf (vx (vel editor)) 0)))
+    (cond ((retained 'movement :up) (setf (vy (vel editor)) (+ speed)))
+          ((retained 'movement :down) (setf (vy (vel editor)) (- speed)))
+          (T (setf (vy (vel editor)) 0))))
+  (nv+ (location editor) (vel editor))
+  (setf (location (unit :camera *scene*)) (location editor)))
 
 ;;; Route visualization
 
