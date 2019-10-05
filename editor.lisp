@@ -85,7 +85,7 @@
           (setf (mode active-editor) :moving)))))
     (:delete
      (let ((entity (entity-at-point (world-location pos) +world+)))
-       (leave entity *scene*)
+       (leave entity +world+)
        (setf (mode active-editor) :select)
        (update-scene-cache +world+ +world+)))
     (:place-wall
@@ -94,14 +94,14 @@
                                  :location location
                                  :size (vec2 0 0))))
        (setf (start-location active-editor) location)
-       (enter wall *scene*)
+       (enter wall +world+)
        (setf (entity active-editor) wall)
        (setf (mode active-editor) :placing-wall)))
     (:place-player
      (let* ((location (nvalign (world-location pos) +grid-size+))
             (player (make-instance 'player
                                    :location location)))
-       (enter player *scene*)
+       (enter player +world+)
        (setf (mode active-editor) :select)))
     (:place-guard
      (handle-place-guard-press active-editor pos button))
@@ -117,7 +117,7 @@
             (size (size entity)))
        (when (or (zerop (vx size))
                  (zerop (vy size)))
-         (leave entity *scene*)
+         (leave entity +world+)
          (update-scene-cache +world+ +world+)))
      (setf (mode active-editor) :select))))
 
@@ -158,7 +158,7 @@
   (let* ((location (nvalign (world-location pos) +grid-size+))
          (guard (make-instance 'guard
                                :location location)))
-    (enter guard *scene*)
+    (enter guard +world+)
     (setf (entity editor) guard)
     (setf (mode editor) :placing-guard)))
 
@@ -197,11 +197,11 @@
 ;;; Zooming and moving the camera
 
 (defun handle-editor-zoom (delta)
-  (let ((camera (unit :camera *scene*)))
+  (let ((camera (unit :camera +world+)))
     (setf (zoom camera) (* (zoom camera) (if (< 0 delta) 1.5 (/ 1.5))))))
 
 (defun update-editor-location (editor)
-  (let ((speed (/ 20 (zoom (unit :camera *scene*)))))
+  (let ((speed (/ 20 (zoom (unit :camera +world+)))))
     (cond ((retained 'movement :left) (setf (vx (vel editor)) (- speed)))
           ((retained 'movement :right) (setf (vx (vel editor)) (+ speed)))
           (T (setf (vx (vel editor)) 0)))
@@ -209,7 +209,7 @@
           ((retained 'movement :down) (setf (vy (vel editor)) (- speed)))
           (T (setf (vy (vel editor)) 0))))
   (nv+ (location editor) (vel editor))
-  (setf (location (unit :camera *scene*)) (location editor)))
+  (setf (location (unit :camera +world+)) (location editor)))
 
 ;;; Route visualization
 
@@ -271,12 +271,12 @@
         (let ((visible-path (make-instance 'visible-path)))
           (setf (mesh visible-path) (route-vertices guard))
           (transition visible-path +world+)
-          (enter visible-path *scene*)
+          (enter visible-path +world+)
           (setf (visible-path editor) visible-path)))))
 
 (defun hide-path (editor)
   (when (visible-path editor)
-    (leave (visible-path editor) *scene*)
+    (leave (visible-path editor) +world+)
     (setf (visible-path editor) nil)))
 
 (defun update-visible-path (editor)
