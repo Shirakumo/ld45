@@ -14,12 +14,18 @@
           for hit = (scan +world+ moving)
           while hit
           do (collide moving (hit-object hit) hit))
+    (when (v/= vel 0)
+      (setf (angle moving) (point-angle vel)))
     (nv+ loc vel)
     (vsetf vel 0 0)))
 
 (defmethod scan ((wall wall) (moving moving))
   (aabb (location moving) (velocity moving)
         (location wall) (nv+ (v/ (size wall) 2) (bsize moving))))
+
+(defmethod scan ((target moving) (source moving))
+  (aabb (location source) (v+ (velocity source) (velocity target))
+        (location target) (v+ (bsize source) (bsize target))))
 
 (defmethod collide ((moving moving) (wall wall) hit)
   (let ((loc (location moving))

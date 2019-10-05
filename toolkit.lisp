@@ -35,6 +35,9 @@
   (+ (expt (- (vx2 a) (vx2 b)) 2)
      (expt (- (vy2 a) (vy2 b)) 2)))
 
+(defun point-angle (point)
+  (atan (vy point) (vx point)))
+
 (defun type-prototype (type)
   (case type
     (character #\Nul)
@@ -92,7 +95,15 @@
     (write expression :stream stream :case :downcase)
     (fresh-line stream)))
 
-(defclass game-entity (entity) ())
+(defclass game-entity (entity)
+  ((state :initform NIL :accessor state)))
+
+(defmethod die :after ((entity game-entity))
+  (setf (state entity) :dead))
+
+(defmethod die :around ((entity game-entity))
+  (unless (eq :dead (state entity))
+    (call-next-method)))
 
 (defclass solid (game-entity) ())
 

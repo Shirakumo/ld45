@@ -4,7 +4,7 @@
     (make-rectangle 1 1))
 
 (define-shader-entity wall (vertex-entity located-entity solid)
-  ((size :initarg :size :initform (vec 32 16) :accessor size)
+  ((size :initarg :size :initform (vec 256 64) :accessor size)
    (vertex-array :initform (asset 'ld45 'unit))))
 
 (defmethod paint :before ((wall wall) target)

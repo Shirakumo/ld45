@@ -1,7 +1,7 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
 (define-asset (ld45 player-mesh) mesh
-    (make-sphere 16))
+    (make-triangle 32 32 :orientation :right))
 
 (define-global +move-speed+ 512)
 
@@ -27,3 +27,15 @@
       (incf (vy vel) (* dt 0.7 +move-speed+)))
     (when (retained 'movement :down)
       (decf (vy vel) (* dt 0.7 +move-speed+)))))
+
+(defmethod die ((player player))
+  (format T "~&
+ _____  ______  _____  _____ ______ 
+|_   _| |  _  \\|_   _||  ___||  _  \\
+  | |   | | | |  | |  | |__  | | | |
+  | |   | | | |  | |  |  __| | | | |
+ _| |_  | |/ /  _| |_ | |___ | |/ / 
+ \\___/  |___/   \\___/ \\____/ |___/  "))
+
+(defmethod collide ((player player) (guard guard) hit)
+  (die player))
