@@ -135,6 +135,14 @@
              (v+ (nvalign (v- (world-location pos) bsize) +grid-size+)
                  bsize))))))
 
+(define-handler (active-editor mouse-scroll) (ev delta)
+  (when (or (retained 'key :control)
+            (retained 'key :left-control) (retained 'key :control-l)
+            (retained 'key :right-control) (retained 'key :control-r))
+    (handle-editor-zoom delta))
+  (when (eq :placing-guard (mode active-editor))
+    (handle-modify-guard-delay active-editor (if (< 0 delta) 1 -1))))
+
 (define-handler (active-editor tick) (ev)
   (update-visible-path active-editor)
   (update-editor-location active-editor))
@@ -161,6 +169,12 @@
        (when (plusp (length (route guard)))
          (vector-pop (route guard)))))))
 
+(defun handle-modify-guard-delay (editor change)
+  (let* ((route (route (entity editor))))
+    (when (plusp (length route))
+      (let ((node (elt route (1- (fill-pointer route)))))
+        (setf (delay node) (max 0 (+ change (delay node))))))))
+
 (define-handler (active-editor loop-guard-path) (ev)
   (when (eq :placing-guard (mode active-editor))
     (setf (end-action (entity active-editor)) :loop)))
@@ -178,12 +192,9 @@
 
 ;;; Zooming and moving the camera
 
-(define-handler (active-editor mouse-scroll) (ev delta)
-  (when (or (retained 'key :control)
-            (retained 'key :left-control) (retained 'key :control-l)
-            (retained 'key :right-control) (retained 'key :control-r))
-    (let ((camera (unit :camera *scene*)))
-      (setf (zoom camera) (* (zoom camera) (if (< 0 delta) 1.5 (/ 1.5)))))))
+(defun handle-editor-zoom (delta)
+  (let ((camera (unit :camera *scene*)))
+    (setf (zoom camera) (* (zoom camera) (if (< 0 delta) 1.5 (/ 1.5))))))
 
 (defun update-editor-location (editor)
   (let ((speed (/ 20 (zoom (unit :camera *scene*)))))
@@ -226,7 +237,15 @@
          do (vertex :position (vxy_ previous-location)
                     :color (vec 1 0 0 1))
          and do (vertex :position (vxy_ location)
-                        :color (vec 1 0 0 1)))
+                        :color (vec 1 0 0 1))
+         ;; Render a line proportionate to the delay
+         do (loop
+               repeat (delay node)
+               for i from 1
+               do (vertex :position (vxy_ (v+ location (vec 0 (* 5 (- i)))))
+                          :color (vec 1 1 1 1))
+                 (vertex :position (vxy_ (v+ location (vec 7 (* 5 (- i)))))
+                         :color (vec 1 1 1 1))))
       ;; Close the loop if necessary
       (when (and (eq :loop (end-action guard))
                  (< 2 (length route)))
