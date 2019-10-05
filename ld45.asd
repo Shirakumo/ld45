@@ -5,9 +5,13 @@
   :license "zlib"
   :components ((:file "package")
                (:file "toolkit")
+               (:file "world")
+               (:file "camera")
+               (:file "player")
+               (:file "editor")
                (:file "main"))
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "ld45"
   :entry-point "org.shirakumo.fraf.ld45:launch"
-  :depends-on (:trial))
+  :depends-on (:trial-glfw))
