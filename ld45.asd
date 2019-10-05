@@ -13,6 +13,7 @@
                (:file "collision")
                (:file "wall")
                (:file "moving")
+               (:file "guard")
                (:file "player")
                (:file "editor")
                (:file "main")
