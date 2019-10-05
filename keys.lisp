@@ -5,6 +5,11 @@
 (define-action toggle-editor (editor-command)
   (key-press (one-of key :section)))
 
+(define-action save-world (editor-command)
+  (key-press (one-of key :f1)))
+
+(define-action load-world (editor-command)
+  (key-press (one-of key :f2)))
 
 (define-action player-action ())
 

@@ -1,6 +1,6 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
-(define-subject moving (located-entity axis-rotated-entity)
+(define-subject moving (located-entity axis-rotated-entity game-entity)
   ((axis :initform +vz+)
    (velocity :initform (vec 0 0) :accessor velocity)
    (bsize :initarg :bsize :initform (vec 16 16) :accessor bsize)))

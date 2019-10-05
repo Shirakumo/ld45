@@ -6,6 +6,8 @@
   :components ((:file "package")
                (:file "toolkit")
                (:file "keys")
+               (:file "packet")
+               (:file "serialization")
                (:file "world")
                (:file "camera")
                (:file "collision")
@@ -13,9 +15,16 @@
                (:file "moving")
                (:file "player")
                (:file "editor")
-               (:file "main"))
+               (:file "main")
+               (:file "v0"))
   :defsystem-depends-on (:deploy)
   :build-operation "deploy-op"
   :build-pathname "ld45"
   :entry-point "org.shirakumo.fraf.ld45:launch"
-  :depends-on (:trial-glfw))
+  :depends-on (:trial-glfw
+               :zip
+               :fast-io
+               :ieee-floats
+               :babel
+               :alexandria
+               :trivial-indent))
