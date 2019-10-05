@@ -6,9 +6,10 @@
    (view-scale :initform 1.0 :accessor view-scale)
    (target-size :initarg :target-size :initform (vec 1280 720) :accessor target-size)
    (target :initarg :target :initform NIL :accessor target)
-   (intended-location :initform (vec 0 0 0) :accessor intended-location)
+   (intended-location :initform (vec 0 0) :accessor intended-location)
    (shake-counter :initform 0 :accessor shake-counter)
-   (shake-intensity :initform 3 :accessor shake-intensity)))
+   (shake-intensity :initform 3 :accessor shake-intensity))
+  (:default-initargs :location (vec 0 0)))
 
 (define-handler (camera trial:tick) (ev tt)
   (let ((loc (location camera))
@@ -38,10 +39,10 @@
 
 (defmethod project-view ((camera camera) ev)
   (let* ((z (view-scale camera))
-         (v (nv- (nv/ (vxy_ (target-size camera)) (zoom camera)) (location camera))))
+         (v (nv- (nv/ (target-size camera) (zoom camera)) (location camera))))
     (reset-matrix *view-matrix*)
     (scale-by z z z *view-matrix*)
-    (translate v *view-matrix*)))
+    (translate-by (vx v) (vy v) 0 *view-matrix*)))
 
 (defun shake-camera (&key (duration 20) (intensity 3))
   (let ((camera (unit :camera +world+)))

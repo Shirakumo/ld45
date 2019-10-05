@@ -4,3 +4,49 @@
 
 (define-action toggle-editor (editor-command)
   (key-press (one-of key :section)))
+
+
+(define-action player-action ())
+
+(define-action start-left (player-action)
+  (key-press (one-of key :a :left))
+  (gamepad-move (one-of axis :dpad-h) (< pos -0.4 old-pos)))
+
+(define-action start-right (player-action)
+  (key-press (one-of key :d :right))
+  (gamepad-move (one-of axis :dpad-h) (< old-pos 0.4 pos)))
+
+(define-action start-up (player-action)
+  (key-press (one-of key :w :up))
+  (gamepad-move (one-of axis :dpad-v) (< pos -0.4 old-pos)))
+
+(define-action start-down (player-action)
+  (key-press (one-of key :s :down))
+  (gamepad-move (one-of axis :dpad-v) (< old-pos 0.8 pos)))
+
+(define-action end-left (player-action)
+  (key-release (one-of key :a :left))
+  (gamepad-move (one-of axis :dpad-h) (< old-pos -0.4 pos)))
+
+(define-action end-right (player-action)
+  (key-release (one-of key :d :right))
+  (gamepad-move (one-of axis :dpad-h) (< pos 0.4 old-pos)))
+
+(define-action end-up (player-action)
+  (key-release (one-of key :w :up))
+  (gamepad-move (one-of axis :dpad-v) (< old-pos -0.4 pos)))
+
+(define-action end-down (player-action)
+  (key-release (one-of key :s :down))
+  (gamepad-move (one-of axis :dpad-v) (< pos 0.8 old-pos)))
+
+(define-retention player-action (ev)
+  (typecase ev
+    (start-left (setf (retained 'player-action :left) T))
+    (start-right (setf (retained 'player-action :right) T))
+    (start-up (setf (retained 'player-action :up) T))
+    (start-down (setf (retained 'player-action :down) T))
+    (end-left (setf (retained 'player-action :left) NIL))
+    (end-right (setf (retained 'player-action :right) NIL))
+    (end-up (setf (retained 'player-action :up) NIL))
+    (end-down (setf (retained 'player-action :down) NIL))))
