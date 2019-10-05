@@ -12,6 +12,7 @@
   ())
 
 (defmethod initialize-instance :after ((world empty-world) &key)
+  (enter (make-instance 'wall :location (vec3 0 64 0)) world)
   (enter (make-instance 'player) world)
   (change-class world 'world))
 

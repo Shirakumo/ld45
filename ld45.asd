@@ -5,8 +5,10 @@
   :license "zlib"
   :components ((:file "package")
                (:file "toolkit")
+               (:file "keys")
                (:file "world")
                (:file "camera")
+               (:file "wall")
                (:file "player")
                (:file "editor")
                (:file "main"))
