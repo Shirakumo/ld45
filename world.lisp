@@ -5,7 +5,8 @@
 (defclass world (pipelined-scene)
   ((packet :initarg :packet :accessor packet)
    (title :initform "Untitled" :initarg :title :accessor title)
-   (author :initform "Anonymous" :initarg :author :accessor author)))
+   (author :initform "Anonymous" :initarg :author :accessor author)
+   (path-map :initform NIL :accessor path-map)))
 
 (defmethod unit (name (_ (eql T)))
   (unit name +world+))
@@ -34,14 +35,16 @@
   (enter (make-instance 'wall :location (vec 0 -512) :size (vec 1024 32)) world)
   (enter (make-instance 'wall :location (vec 0 +512) :size (vec 1024 32)) world)
   ;;  (enter (make-instance 'guard :location (vec 0 256) :route '((128 254 0) (0 512 1) (-128 256 0))) world)
-  (enter (make-instance 'guard :location (vec 0 -256) :route '((-128 -128 0) (256 128 0))) world)
+  (enter (make-instance 'guard :location (vec 0 -256) :name :guard) world)
   (enter (make-instance 'player) world)
+  (update-scene-cache world world)
   (change-class world 'world))
 
 (defgeneric update-scene-cache (entity scene)
   (:method (entity scene) nil))
 
 (defmethod update-scene-cache ((world world) (scene scene))
+  (setf (path-map world) (compute-path-map scene))
   (for:for ((entity over +world+))
     (update-scene-cache entity scene)))
 
@@ -55,11 +58,13 @@
 (defmethod load-world ((packet packet))
   (v:info :ld45.world "Loading ~a" packet)
   (destructuring-bind (header &optional metadata) (parse-sexps (packet-entry "meta.lisp" packet :element-type 'character))
-    (decode-payload
-     metadata (type-prototype 'world) packet
-     (destructuring-bind (&key identifier version) header
-       (assert (eql 'world identifier))
-       (coerce-version version)))))
+    (let ((world (decode-payload
+                  metadata (type-prototype 'world) packet
+                  (destructuring-bind (&key identifier version) header
+                    (assert (eql 'world identifier))
+                    (coerce-version version)))))
+      (update-scene-cache world world)
+      world)))
 
 (defmethod save-world ((world world) (target (eql T)) &key version (if-exists :supersede))
   (let ((packet (packet world)))

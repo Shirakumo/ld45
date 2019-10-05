@@ -15,7 +15,8 @@
             (make-instance 'empty-world))))
 
 (defmethod (setf scene) :after (scene (main main))
-  (setf +world+ scene))
+  (setf +world+ scene)
+  (chase (vec 1 400) (unit :guard scene)))
 
 (defmethod finalize :after ((main main))
   (setf +world+ NIL))

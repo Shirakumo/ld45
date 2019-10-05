@@ -14,6 +14,7 @@
     (make-triangle 32 16 :orientation :right))
 
 (define-global +guard-patrol-speed+ 64)
+(define-global +guard-chase-speed+ 400)
 (define-global +guard-scan-time+ 1)
 
 (define-shader-subject guard (vertex-entity moving solid)
@@ -24,7 +25,8 @@
    (route-index :initarg :route-index :initform 0 :accessor route-index)
    (route-direction :initarg :route-direction :initform 1 :accessor route-direction)
    (next-node-timer :initform 0 :accessor next-node-timer)
-   (end-action :initarg :end-action :initform :loop :accessor end-action)))
+   (end-action :initarg :end-action :initform :loop :accessor end-action)
+   (chase-path :initform NIL :accessor chase-path)))
 
 (defmethod initialize-instance :after ((guard guard) &key route)
   (loop for (x y d) in route
@@ -63,24 +65,35 @@
        (setf (route-direction guard) (* -1 (route-direction guard)))
        (incf (route-index guard) (route-direction guard))))))
 
+(defmethod move-towards ((guard guard) target speed)
+  (when (< speed (vsqrdist2 (location guard) target))
+    (let ((dir (nvunit (v- target (location guard)))))
+      (nv+ (velocity guard) (nv* dir speed)))))
+
 (defmethod step :before ((guard guard) ev)
   (let ((route (route guard))
         (dt (dt ev)))
     (case (state guard)
       (:patrol
-       (cond ((< (vsqrdist2 (location guard) (location (aref route (route-index guard))))
-                 (* dt +guard-patrol-speed+))
-              (setf (next-node-timer guard) (delay (aref route (route-index guard))))
-              (setf (state guard) :wait))
-             (T
-              (let ((dir (nvunit (v- (location (aref route (route-index guard))) (location guard)))))
-                (nv+ (velocity guard) (nv* dir dt +guard-patrol-speed+))))))
+       (unless (move-towards guard (location (aref route (route-index guard)))
+                             (* dt +guard-patrol-speed+))
+         (setf (next-node-timer guard) (delay (aref route (route-index guard))))
+         (setf (state guard) :wait)))
       (:wait
        (decf (next-node-timer guard) dt)
        (when (< (next-node-timer guard) 0)
          (incf (route-index guard) (route-direction guard))
          (setf (state guard) :patrol)))
-      (:chase))))
+      (:chase
+       (unless (move-towards guard (first (chase-path guard))
+                             (* dt +guard-chase-speed+))
+        (pop (chase-path guard)))
+       (when (null (chase-path guard))
+         (setf (state guard) (if (/= 0 (length route)) :patrol NIL)))))))
+
+(defmethod chase (target (guard guard))
+  (setf (chase-path guard) (nreverse (find-path (path-map +world+) (location guard) target)))
+  (setf (state guard) :chase))
 
 (defmethod step :after ((guard guard) ev)
   (setf (location (viewcone guard)) (location guard)))

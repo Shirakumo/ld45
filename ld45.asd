@@ -8,6 +8,7 @@
                (:file "keys")
                (:file "packet")
                (:file "serialization")
+               (:file "pathfinding")
                (:file "world")
                (:file "camera")
                (:file "collision")

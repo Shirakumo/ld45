@@ -40,6 +40,19 @@
          (* grid (floor (+ (vx vec) (/ grid 2)) grid))
          (* grid (floor (+ (vy vec) (/ grid 2)) grid))))
 
+(defun valign (vec grid)
+  (vec (* grid (floor (+ (vx vec) (/ grid 2)) grid))
+       (* grid (floor (+ (vy vec) (/ grid 2)) grid))))
+
+(defun vfloor (vec &optional (divisor 1))
+  (vec (floor (vx2 vec) divisor)
+       (floor (vy2 vec) divisor)))
+
+(defun nvfloor (vec &optional (divisor 1))
+  (vsetf vec
+         (floor (vx2 vec) divisor)
+         (floor (vy2 vec) divisor)))
+
 (defun vsqrlen2 (v)
   (declare (type vec2 v))
   (declare (optimize speed))
