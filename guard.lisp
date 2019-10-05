@@ -29,7 +29,7 @@
   (loop for (x y d) in route
         do (vector-push-extend (route-node (vec x y) d) (route guard)))
   (when (= 0 (length route))
-    (setf (state guard) :wait)))
+    (setf (state guard) NIL)))
 
 (defmethod collide ((guard guard) (other guard) hit))
 
