@@ -6,7 +6,8 @@
 (define-global +move-speed+ 512)
 
 (define-shader-subject player (vertex-entity moving)
-  ((vertex-array :initform (asset 'ld45 'player-mesh))))
+  ((name :initform :player)
+   (vertex-array :initform (asset 'ld45 'player-mesh))))
 
 (defmethod contained-p ((point vec2) (player player))
   (let ((loc (location player))

@@ -29,7 +29,11 @@
 
 (defmethod initialize-instance :after ((world empty-world) &key)
   (enter (make-instance 'wall :location (vec 0 128)) world)
-  (enter (make-instance 'guard :location (vec 0 256) :route '((128 254 0) (0 512 1) (-128 256 0))) world)
+  (enter (make-instance 'wall :location (vec -512 0) :size (vec 32 1024)) world)
+  (enter (make-instance 'wall :location (vec +512 0) :size (vec 32 1024)) world)
+  (enter (make-instance 'wall :location (vec 0 -512) :size (vec 1024 32)) world)
+  (enter (make-instance 'wall :location (vec 0 +512) :size (vec 1024 32)) world)
+  ;;  (enter (make-instance 'guard :location (vec 0 256) :route '((128 254 0) (0 512 1) (-128 256 0))) world)
   (enter (make-instance 'guard :location (vec 0 -256)) world)
   (enter (make-instance 'player) world)
   (change-class world 'world))

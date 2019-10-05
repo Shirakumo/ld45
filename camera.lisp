@@ -11,6 +11,9 @@
    (shake-intensity :initform 3 :accessor shake-intensity))
   (:default-initargs :location (vec 0 0)))
 
+(defmethod enter :after ((camera camera) (scene scene))
+  (setf (target camera) (unit :player scene)))
+
 (define-handler (camera trial:tick) (ev tt)
   (let ((loc (location camera))
         (int (intended-location camera)))
@@ -39,10 +42,10 @@
 
 (defmethod project-view ((camera camera) ev)
   (let* ((z (view-scale camera))
-         (v (nv- (nv/ (target-size camera) (zoom camera)) (location camera))))
+         (v (nv- (v/ (target-size camera) (zoom camera)) (location camera))))
     (reset-matrix *view-matrix*)
     (scale-by z z z *view-matrix*)
-    (translate-by (vx v) (vy v) 0 *view-matrix*)))
+    (translate-by (vx v) (vy v) 100 *view-matrix*)))
 
 (defun shake-camera (&key (duration 20) (intensity 3))
   (let ((camera (unit :camera +world+)))

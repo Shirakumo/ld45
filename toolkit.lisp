@@ -40,6 +40,16 @@
          (* grid (floor (+ (vx vec) (/ grid 2)) grid))
          (* grid (floor (+ (vy vec) (/ grid 2)) grid))))
 
+(defun vsqrlen2 (v)
+  (declare (type vec2 v))
+  (declare (optimize speed))
+  (+ (expt (vx2 v) 2)
+     (expt (vy2 v) 2)))
+
+(defun vc2 (a b)
+  (- (* (vx a) (vy b))
+     (* (vy a) (vx b))))
+
 (defun point-angle (point)
   (atan (vy point) (vx point)))
 
