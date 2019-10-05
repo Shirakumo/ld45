@@ -49,7 +49,7 @@
     (case (state guard)
       (:patrol
        (cond ((< (vsqrdist2 (location guard) (location (aref route (route-index guard))))
-                 (* dt +guard-walk-speed+))
+                 (* dt +guard-patrol-speed+))
               (setf (next-node-timer guard) (delay (aref route (route-index guard))))
               (setf (state guard) :wait))
              (T
