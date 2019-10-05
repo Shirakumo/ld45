@@ -11,5 +11,11 @@
 (defmethod (setf size) :after (size (wall wall))
   (vsetf (bsize wall) (/ (vx size) 2) (/ (vy size) 2)))
 
+(defmethod contained-p ((point vec2) (wall wall))
+  (let ((loc (location wall))
+        (half-size (v/ (size wall) 2)))
+    (and (< (abs (- (vx loc) (vx point))) (vx half-size))
+         (< (abs (- (vy loc) (vy point))) (vy half-size)))))
+
 (defmethod paint :before ((wall wall) target)
   (scale-by (vx (size wall)) (vy (size wall)) 1))

@@ -35,6 +35,11 @@
   (+ (expt (- (vx2 a) (vx2 b)) 2)
      (expt (- (vy2 a) (vy2 b)) 2)))
 
+(defun nvalign (vec grid)
+  (vsetf vec
+         (* grid (floor (+ (vx vec) (/ grid 2)) grid))
+         (* grid (floor (+ (vy vec) (/ grid 2)) grid))))
+
 (defun point-angle (point)
   (atan (vy point) (vx point)))
 

@@ -33,6 +33,12 @@
 
 (defmethod collide ((guard guard) (other guard) hit))
 
+(defmethod contained-p ((point vec2) (guard guard))
+  (let ((loc (location guard))
+        (half-size (bsize guard)))
+    (and (< (abs (- (vx loc) (vx point))) (vx half-size))
+         (< (abs (- (vy loc) (vy point))) (vy half-size)))))
+
 (defmethod (setf route-index) :after (index (guard guard))
   (when (and (/= 0 (length (route guard)))
              (not (<= 0 index (1- (length (route guard))))))

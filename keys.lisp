@@ -5,6 +5,21 @@
 (define-action toggle-editor (editor-command)
   (key-press (one-of key :section)))
 
+(define-action select-entity (editor-command)
+  (key-press (one-of key :tab)))
+
+(define-action delete-entity (editor-command)
+  (key-press (one-of key :delete)))
+
+(define-action place-wall (editor-command)
+  (key-press (one-of key :f5)))
+
+(define-action place-player (editor-command)
+  (key-press (one-of key :f6)))
+
+(define-action place-guard (editor-command)
+  (key-press (one-of key :f7)))
+
 (define-action save-world (editor-command)
   (key-press (one-of key :f1)))
 

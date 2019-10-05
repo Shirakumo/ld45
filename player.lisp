@@ -8,6 +8,12 @@
 (define-shader-subject player (vertex-entity moving)
   ((vertex-array :initform (asset 'ld45 'player-mesh))))
 
+(defmethod contained-p ((point vec2) (player player))
+  (let ((loc (location player))
+        (half-size (bsize player)))
+    (and (< (abs (- (vx loc) (vx point))) (vx half-size))
+         (< (abs (- (vy loc) (vy point))) (vy half-size)))))
+
 (defmethod step :before ((player player) ev)
   (let ((loc (location player))
         (vel (velocity player))
