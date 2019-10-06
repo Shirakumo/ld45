@@ -16,9 +16,9 @@
   (make-instance 'route-node :location location :delay delay))
 
 (define-asset (ld45 guard-mesh) mesh
-    (make-rectangle 32 32))
+    (make-rectangle 64 64))
 
-(define-global +guard-sway-aperture+ (->rad 45))
+(define-global +guard-sway-aperture+ (->rad 30))
 (define-global +guard-patrol-speed+ 64)
 (define-global +guard-chase-speed+ 400)
 (define-global +guard-scan-time+ 5)
@@ -27,7 +27,7 @@
 (define-shader-subject guard (draggable solid animated-sprite-subject)
   ((vertex-array :initform (asset 'ld45 'guard-mesh))
    (size :initform (vec 32 32))
-   (bsize :initform (vec 16 16))
+   (bsize :initform (vec 32 32))
    (texture :initform (asset 'ld45 'guard))
    (viewcone :initform (make-instance 'sector) :reader viewcone)
    (state :initform :return)
@@ -68,9 +68,9 @@
   (register-object-for-pass pass (viewcone guard)))
 
 (defmethod paint :around ((guard guard) pass)
-  (call-next-method)
   (unless (eql :down (state guard))
-    (paint (viewcone guard) pass)))
+    (paint (viewcone guard) pass))
+  (call-next-method))
 
 (defmethod (setf route-index) :after (index (guard guard))
   (when (and (/= 0 (length (route guard)))
@@ -133,10 +133,12 @@
 (defmethod step :after ((guard guard) ev)
   (setf (location (viewcone guard)) (location guard))
   (case (state guard)
-    (:down (setf (animation guard) 'down))
-    (T (if (v/= 0 (velocity guard))
-           (setf (animation guard) 'walk)
-           (setf (animation guard) 'stand)))))
+    (:down
+     (setf (animation guard) 'down))
+    ((:patrol :chase)
+     (setf (animation guard) 'walk))
+    (T
+     (setf (animation guard) 'stand))))
 
 (defmethod down ((guard guard))
   (unless (eql :down (state guard))

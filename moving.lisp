@@ -47,6 +47,7 @@
   (let ((d (dragger entity)))
     (when d
       (setf (location entity) (nv+ (nv* (angle-point (angle d)) (bsize entity) -2) (location d)))
+      (setf (angle entity) (- (angle d) PI))
       (unless (eq :dragging (state d))
         (setf (dragger entity) NIL)))))
 
