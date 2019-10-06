@@ -8,10 +8,13 @@
 (define-global +takedown-max-distance+ 40)
 (define-global +takedown-dot-threshold+ -0.9)
 (define-global +dragging-max-distance+ 24)
+(define-global +bullet-speed+ 2048)
+(define-global +bullet-cooldown-time+ 1)
 
 (define-shader-subject player (vertex-entity moving)
   ((name :initform :player)
-   (vertex-array :initform (asset 'ld45 'player-mesh))))
+   (vertex-array :initform (asset 'ld45 'player-mesh))
+   (move-timer :initform 0 :accessor move-timer)))
 
 (defmethod contained-p ((point vec2) (player player))
   (let ((loc (location player))
@@ -32,14 +35,18 @@
                (setf (vx move) (* (vx move) (vx move) (signum (vx move)) (cl-gamepad:axis-multiplier device 0)))
                (setf (vy move) (* (vy move) (vy move) (signum (vy move)) (cl-gamepad:axis-multiplier device 1)))
                (nv+ vel (nv* move move-speed dt))))
-    (when (retained 'movement :left)
-      (decf (vx vel) (* dt 0.7 move-speed)))
-    (when (retained 'movement :right)
-      (incf (vx vel) (* dt 0.7 move-speed)))
-    (when (retained 'movement :up)
-      (incf (vy vel) (* dt 0.7 move-speed)))
-    (when (retained 'movement :down)
-      (decf (vy vel) (* dt 0.7 move-speed)))))
+    (cond
+      ((< 0 (move-timer player))
+       (decf (move-timer player) dt))
+      (t
+       (when (retained 'movement :left)
+         (decf (vx vel) (* dt 0.7 move-speed)))
+       (when (retained 'movement :right)
+         (incf (vx vel) (* dt 0.7 move-speed)))
+       (when (retained 'movement :up)
+         (incf (vy vel) (* dt 0.7 move-speed)))
+       (when (retained 'movement :down)
+         (decf (vy vel) (* dt 0.7 move-speed)))))))
 
 (defmethod die ((player player))
   (format T "~&
@@ -80,3 +87,28 @@
          (drag entity player)
          ;; You can only drag one guard
          (for:end-for))))))
+
+(define-shader-subject bullet (vertex-entity moving)
+  ((vertex-array :initform (asset 'ld45 'player-mesh))))
+
+(defmethod step :before ((bullet bullet) ev)
+  (setf (velocity bullet)
+        (v* (angle-point (angle bullet))
+            (* (dt ev) 0.7 +bullet-speed+))))
+
+(defmethod collide ((bullet bullet) (guard guard) hit)
+  (unless (eq (state guard) :down)
+    (down guard)
+    (leave bullet +world+)))
+
+(defmethod collide ((bullet bullet) (wall wall) hit)
+  (leave bullet +world+))
+
+(define-handler (player shoot) (ev)
+  (when (and (<= (move-timer player) 0)
+             (zerop (vlength (velocity player))))
+    (let ((bullet (make-instance 'bullet
+                                 :location (vcopy (location player))
+                                 :angle (angle player))))
+      (enter bullet +world+)
+      (setf (move-timer player) +bullet-cooldown-time+))))

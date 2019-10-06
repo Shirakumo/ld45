@@ -87,3 +87,7 @@
 (define-action toggle-dragging (player-action)
   (key-press (one-of key :e))
   (gamepad-press (one-of button :b)))
+
+(define-action shoot (player-action)
+  (key-press (one-of key :v))
+  (gamepad-press (one-of button :a)))
