@@ -112,7 +112,8 @@
       (:down
        (decf (down-timer guard) dt)
        (when (<= (down-timer guard) 0)
-         (setf (dragger guard) NIL)
+         (when (dragger guard)
+           (setf (dragger guard) NIL))
          (setf (state guard) :return))))
     (when (v/= 0 vel)
       (setf (direction (viewcone guard)) (vunit vel)))))
