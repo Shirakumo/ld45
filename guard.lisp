@@ -13,26 +13,27 @@
 (define-asset (ld45 guard-mesh) mesh
     (make-triangle 32 16 :orientation :right))
 
+(define-global +guard-sway-aperture+ (->rad 45))
 (define-global +guard-patrol-speed+ 64)
 (define-global +guard-chase-speed+ 400)
-(define-global +guard-scan-time+ 1)
+(define-global +guard-scan-time+ 5)
+(define-global +guard-down-time+ 10)
 
 (define-shader-subject guard (vertex-entity moving solid)
   ((vertex-array :initform (asset 'ld45 'guard-mesh))
    (viewcone :initform (make-instance 'sector) :reader viewcone)
-   (state :initform :patrol)
+   (state :initform :return)
    (route :initform (make-array 0 :adjustable T :fill-pointer T) :accessor route)
    (route-index :initarg :route-index :initform 0 :accessor route-index)
    (route-direction :initarg :route-direction :initform 1 :accessor route-direction)
-   (next-node-timer :initform 0 :accessor next-node-timer)
    (end-action :initarg :end-action :initform :loop :accessor end-action)
-   (chase-path :initform NIL :accessor chase-path)))
+   (chase-path :initform NIL :accessor chase-path)
+   (look-timer :initform 0 :accessor look-timer)
+   (down-timer :initform 0 :accessor down-timer)))
 
 (defmethod initialize-instance :after ((guard guard) &key route)
   (loop for (x y d) in route
-        do (vector-push-extend (route-node (vec x y) d) (route guard)))
-  (when (= 0 (length route))
-    (setf (state guard) NIL)))
+        do (vector-push-extend (route-node (vec x y) d) (route guard))))
 
 (defmethod collide ((guard guard) (other guard) hit))
 
@@ -75,28 +76,51 @@
         (route (route guard))
         (dt (dt ev)))
     (case (state guard)
+      (:return
+        (setf (state guard) (if (/= 0 (length route)) :patrol :look)))
       (:patrol
        (unless (move-towards guard (location (aref route (route-index guard)))
                              (* dt +guard-patrol-speed+))
-         (setf (next-node-timer guard) (delay (aref route (route-index guard))))
-         (setf (state guard) :wait))
-       (when (v/= 0 vel)
-         (setf (direction (viewcone guard)) (vunit vel))))
-      (:wait
-       (decf (next-node-timer guard) dt)
-       (when (< (next-node-timer guard) 0)
+         (setf (look-timer guard) (delay (aref route (route-index guard))))
+         (setf (state guard) :look))
+       (when (visible-p (location (unit :player T)) (viewcone guard))
+         (chase (unit :player T) guard)))
+      (:look
+       (decf (look-timer guard) dt)
+       (let* ((progress (* (/ (mod (look-timer guard) +guard-scan-time+) +guard-scan-time+) PIF 2))
+              (angle (+ (angle guard) (* +guard-sway-aperture+ (sin progress)))))
+         (setf (direction (viewcone guard))  (angle-point angle)))
+       (when (< (look-timer guard) 0)
          (incf (route-index guard) (route-direction guard))
-         (setf (state guard) :patrol)))
+         (setf (state guard) :return))
+       (when (visible-p (location (unit :player T)) (viewcone guard))
+         (chase (unit :player T) guard)))
       (:chase
-       (unless (move-towards guard (first (chase-path guard))
-                             (* dt +guard-chase-speed+))
-        (pop (chase-path guard)))
-       (when (null (chase-path guard))
-         (setf (state guard) (if (/= 0 (length route)) :patrol NIL)))))))
-
-(defmethod chase (target (guard guard))
-  (setf (chase-path guard) (nreverse (find-path (path-map +world+) (location guard) target)))
-  (setf (state guard) :chase))
+       (cond ((null (chase-path guard))
+              (setf (look-timer guard) +guard-scan-time+)
+              (setf (state guard) :look))
+             ((not (move-towards guard (first (chase-path guard))
+                                 (* dt +guard-chase-speed+)))
+              (when (visible-p (location (unit :player T)) (viewcone guard))
+                (chase (unit :player T) guard))
+              (pop (chase-path guard)))))
+      (:down
+       (decf (down-timer guard) dt)
+       (when (<= (down-timer guard) 0)
+         (setf (state guard) :return))))
+    (when (v/= 0 vel)
+      (setf (direction (viewcone guard)) (vunit vel)))))
 
 (defmethod step :after ((guard guard) ev)
   (setf (location (viewcone guard)) (location guard)))
+
+(defmethod down ((guard guard))
+  (setf (state guard) :down)
+  (setf (down-timer guard) +guard-down-time+))
+
+(defmethod chase ((target located-entity) (guard guard))
+  (chase (location target) guard))
+
+(defmethod chase ((target vec2) (guard guard))
+  (setf (chase-path guard) (nreverse (find-path (path-map +world+) (location guard) target)))
+  (setf (state guard) :chase))

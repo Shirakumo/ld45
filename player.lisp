@@ -43,7 +43,7 @@
     (when (retained 'movement :down)
       (decf (vy vel) (* dt 0.7 move-speed)))
     (when dragged-entity
-      (setf (velocity dragged-entity) (vcopy vel)))))
+      (vsetf (velocity dragged-entity) (vx vel) (vy vel)))))
 
 (defmethod die ((player player))
   (format T "~&
@@ -67,7 +67,8 @@
                (< (v. (angle-point (angle entity))
                       (nvunit (v- (location player) (location entity))))
                   +takedown-dot-threshold+))
-      (setf (state entity) :down)
+      (v:info :player "Took down ~a" entity)
+      (down entity)
       ;; You can only take down one at a time
       (for:end-for))))
 
