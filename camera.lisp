@@ -45,7 +45,7 @@
          (v (nv- (v/ (target-size camera) (zoom camera)) (location camera))))
     (reset-matrix *view-matrix*)
     (scale-by z z z *view-matrix*)
-    (translate-by (vx v) (+ (vy v) (/ (vy (target-size camera)) z)) 100 *view-matrix*)))
+    (translate-by (vx v) (+ (vy v) (/ (vy (target-size camera)) 1/2 (zoom camera))) 100 *view-matrix*)))
 
 (defun shake-camera (&key (duration 20) (intensity 3))
   (let ((camera (unit :camera +world+)))
