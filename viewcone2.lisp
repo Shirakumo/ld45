@@ -318,8 +318,10 @@
         (check-polygon poly sector points blocking-edges)))
     (when (allocated-p (vertex-array sector))
       (let ((angle-points (make-array (+ 2 (hash-table-count points)))))
-        (setf (aref angle-points 0) (sector-ledge sector))
-        (setf (aref angle-points (1- (length angle-points))) (sector-redge sector))
+        (setf (aref angle-points 0)
+              (v+ (sector-ledge sector) (location sector)))
+        (setf (aref angle-points (1- (length angle-points)))
+              (v+ (sector-redge sector) (location sector)))
         (loop for i from 1
               for p being the hash-keys of points
               do (setf (aref angle-points i) p))
