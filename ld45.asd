@@ -15,6 +15,7 @@
                (:file "wall")
                (:file "moving")
                (:file "viewcone")
+               (:file "viewcone2")
                (:file "guard")
                (:file "player")
                (:file "editor")

@@ -19,7 +19,7 @@
 
 (define-shader-subject guard (vertex-entity moving solid)
   ((vertex-array :initform (asset 'ld45 'guard-mesh))
-   (viewcone :initform (make-instance 'viewcone) :reader viewcone)
+   (viewcone :initform (make-instance 'sector) :reader viewcone)
    (state :initform :patrol)
    (route :initform (make-array 0 :adjustable T :fill-pointer T) :accessor route)
    (route-index :initarg :route-index :initform 0 :accessor route-index)
