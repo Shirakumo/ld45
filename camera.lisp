@@ -2,7 +2,7 @@
 
 (define-subject camera (trial:2d-camera)
   ((name :initform :camera)
-   (zoom :initarg :zoom :initform 1.0 :accessor zoom)
+   (zoom :initarg :zoom :initform 3.0 :accessor zoom)
    (view-scale :initform 1.0 :accessor view-scale)
    (target-size :initarg :target-size :initform (vec 1280 720) :accessor target-size)
    (target :initarg :target :initform NIL :accessor target)
@@ -45,7 +45,7 @@
          (v (nv- (v/ (target-size camera) (zoom camera)) (location camera))))
     (reset-matrix *view-matrix*)
     (scale-by z z z *view-matrix*)
-    (translate-by (vx v) (vy v) 100 *view-matrix*)))
+    (translate-by (vx v) (+ (vy v) (/ (vy (target-size camera)) z)) 100 *view-matrix*)))
 
 (defun shake-camera (&key (duration 20) (intensity 3))
   (let ((camera (unit :camera +world+)))

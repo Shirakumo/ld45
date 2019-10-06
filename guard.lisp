@@ -17,9 +17,9 @@
 
 (define-global +guard-sway-aperture+ (->rad 30))
 (define-global +guard-patrol-speed+ 64)
-(define-global +guard-chase-speed+ 400)
+(define-global +guard-chase-speed+ 150)
 (define-global +guard-scan-time+ 5)
-(define-global +guard-down-time+ 10)
+(define-global +guard-down-time+ 20)
 
 (define-shader-subject guard (draggable solid human)
   ((texture :initform (asset 'ld45 'guard))

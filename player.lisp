@@ -5,12 +5,12 @@
   :min-filter :nearest
   :mag-filter :nearest)
 
-(define-global +move-speed+ 512)
+(define-global +move-speed+ 200)
 (define-global +dragging-move-speed+ 64)
 (define-global +takedown-max-distance+ 40)
 (define-global +takedown-dot-threshold+ -0.9)
 (define-global +dragging-max-distance+ 24)
-(define-global +bullet-speed+ 2048)
+(define-global +bullet-speed+ 1024)
 (define-global +bullet-cooldown-time+ 0.5)
 
 (define-shader-subject player (human)
@@ -35,10 +35,10 @@
     (flet ((move (speed)
              (loop for device in (cl-gamepad:devices)
                    for move = (vec (cl-gamepad:axis device 0)
-                                   (cl-gamepad:axis device 1))
+                                   (- (cl-gamepad:axis device 1)))
                    do (when (< 0.3 (vlength move))
-                        (setf (vx move) (* (vx move) (vx move) (signum (vx move)) (cl-gamepad:axis-multiplier device 0)))
-                        (setf (vy move) (* (vy move) (vy move) (signum (vy move)) (cl-gamepad:axis-multiplier device 1)))
+                        (setf (vx move) (* (vx move) (vx move) (signum (vx move))))
+                        (setf (vy move) (* (vy move) (vy move) (signum (vy move))))
                         (nv+ vel (nv* move speed dt))))
              (when (retained 'movement :left)
                (decf (vx vel) (* dt 0.7 speed)))
