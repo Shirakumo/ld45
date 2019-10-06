@@ -16,8 +16,11 @@
           do (collide moving (hit-object hit) hit))
     (when (v/= vel 0)
       (setf (angle moving) (point-angle vel)))
-    (nv+ loc vel)
-    (vsetf vel 0 0)))
+    (nv+ loc vel)))
+
+(defmethod step :around ((moving moving) ev)
+  (vsetf (velocity moving) 0 0)
+  (call-next-method))
 
 (defmethod scan ((wall wall) (moving moving))
   (aabb (location moving) (velocity moving)
