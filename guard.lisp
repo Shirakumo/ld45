@@ -19,7 +19,7 @@
 (define-global +guard-scan-time+ 5)
 (define-global +guard-down-time+ 10)
 
-(define-shader-subject guard (vertex-entity moving solid)
+(define-shader-subject guard (vertex-entity draggable solid)
   ((vertex-array :initform (asset 'ld45 'guard-mesh))
    (viewcone :initform (make-instance 'sector) :reader viewcone)
    (state :initform :return)
@@ -36,6 +36,9 @@
         do (vector-push-extend (route-node (vec x y) d) (route guard))))
 
 (defmethod collide ((guard guard) (other guard) hit))
+
+(defmethod draggable-p ((guard guard))
+  (eq :down (state guard)))
 
 (defmethod contained-p ((point vec2) (guard guard))
   (let ((loc (location guard))
@@ -54,7 +57,8 @@
 
 (defmethod paint :around ((guard guard) pass)
   (call-next-method)
-  (paint (viewcone guard) pass))
+  (unless (eql :down (state guard))
+    (paint (viewcone guard) pass)))
 
 (defmethod (setf route-index) :after (index (guard guard))
   (when (and (/= 0 (length (route guard)))
@@ -107,6 +111,7 @@
       (:down
        (decf (down-timer guard) dt)
        (when (<= (down-timer guard) 0)
+         (setf (dragger guard) NIL)
          (setf (state guard) :return))))
     (when (v/= 0 vel)
       (setf (direction (viewcone guard)) (vunit vel)))))

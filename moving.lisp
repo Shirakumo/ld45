@@ -33,3 +33,24 @@
         (nor (hit-normal hit)))
     (nv+ loc (v* vel (hit-time hit)))
     (nv- vel (v* nor (v. vel nor)))))
+
+(define-subject draggable (moving)
+  ((dragger :initform NIL :accessor dragger)))
+
+(defmethod draggable-p ((draggable draggable)) T)
+(defmethod draggable-p ((entity entity)) NIL)
+
+(defmethod step :after ((entity draggable) ev)
+  (let ((d (dragger entity)))
+    (when d
+      (setf (location entity) (nv+ (nv* (angle-point (angle d)) (bsize entity) -2) (location d)))
+      (unless (eq :dragging (state d))
+        (setf (dragger entity) NIL)))))
+
+(defmethod (setf dragger) :before ((nobody null) (draggable draggable))
+  (when (eq :dragging (state (dragger draggable)))
+    (setf (state (dragger draggable)) NIL)))
+
+(defmethod drag ((draggable draggable) (dragger moving))
+  (setf (dragger draggable) dragger)
+  (setf (state dragger) :dragging))

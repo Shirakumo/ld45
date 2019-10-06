@@ -5,15 +5,13 @@
 
 (define-global +move-speed+ 512)
 (define-global +dragging-move-speed+ 64)
-(define-global +takedown-min-distance+ 16)
 (define-global +takedown-max-distance+ 40)
 (define-global +takedown-dot-threshold+ -0.9)
 (define-global +dragging-max-distance+ 24)
 
 (define-shader-subject player (vertex-entity moving)
   ((name :initform :player)
-   (vertex-array :initform (asset 'ld45 'player-mesh))
-   (dragged-entity :initform nil :accessor dragged-entity)))
+   (vertex-array :initform (asset 'ld45 'player-mesh))))
 
 (defmethod contained-p ((point vec2) (player player))
   (let ((loc (location player))
@@ -22,11 +20,11 @@
          (< (abs (- (vy loc) (vy point))) (vy half-size)))))
 
 (defmethod step :before ((player player) ev)
-  (let* ((loc (location player))
-         (vel (velocity player))
+  (let* ((vel (velocity player))
          (dt (dt ev))
-         (dragged-entity (dragged-entity player))
-         (move-speed (if dragged-entity +dragging-move-speed+ +move-speed+)))
+         (move-speed (case (state player)
+                       (:dragging +dragging-move-speed+)
+                       (T +move-speed+))))
     (loop for device in (cl-gamepad:devices)
           for move = (vec (cl-gamepad:axis device 0)
                           (cl-gamepad:axis device 1))
@@ -41,9 +39,7 @@
     (when (retained 'movement :up)
       (incf (vy vel) (* dt 0.7 move-speed)))
     (when (retained 'movement :down)
-      (decf (vy vel) (* dt 0.7 move-speed)))
-    (when dragged-entity
-      (vsetf (velocity dragged-entity) (vx vel) (vy vel)))))
+      (decf (vy vel) (* dt 0.7 move-speed)))))
 
 (defmethod die ((player player))
   (format T "~&
@@ -55,14 +51,14 @@
  \\___/  |___/   \\___/ \\____/ |___/  "))
 
 (defmethod collide ((player player) (guard guard) hit)
-  (die player))
+  (when (eql :chase (state guard))
+    (die player)))
 
 (define-handler (player attempt-takedown) (ev)
   (for:for ((entity over +world+))
     (when (and (typep entity 'guard)
                (not (eq :chase (state entity)))
-               (< +takedown-min-distance+
-                  (vdistance (location player) (location entity))
+               (< (vdistance (location player) (location entity))
                   +takedown-max-distance+)
                (< (v. (angle-point (angle entity))
                       (nvunit (v- (location player) (location entity))))
@@ -73,13 +69,14 @@
       (for:end-for))))
 
 (define-handler (player toggle-dragging) (ev)
-  (if (dragged-entity player)
-      (setf (dragged-entity player) nil)
-      (for:for ((entity over +world+))
-        (when (and (typep entity 'guard)
-                   (eq :down (state entity))
-                   (< (vdistance (location player) (location entity))
-                      +dragging-max-distance+))
-          (setf (dragged-entity player) entity)
-          ;; You can only drag one guard
-          (for:end-for)))))
+  (case (state player)
+    (:dragging
+     (setf (state player) NIL))
+    ((NIL)
+     (for:for ((entity over +world+))
+       (when (and (draggable-p entity)
+                  (< (vdistance (location player) (location entity))
+                     +dragging-max-distance+))
+         (drag entity player)
+         ;; You can only drag one guard
+         (for:end-for))))))
