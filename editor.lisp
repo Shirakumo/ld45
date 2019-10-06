@@ -156,8 +156,8 @@
 (defun handle-place-guard-press (editor pos button)
   (declare (ignore button))
   (let* ((location (nvalign (world-location pos) +grid-size+))
-         (guard (make-instance 'guard
-                               :location location)))
+         (guard (make-instance 'guard :location location)))
+    (transition guard +world+)
     (enter guard +world+)
     (setf (entity editor) guard)
     (setf (mode editor) :placing-guard)))

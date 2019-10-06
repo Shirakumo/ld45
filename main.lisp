@@ -15,8 +15,7 @@
             (make-instance 'empty-world))))
 
 (defmethod (setf scene) :after (scene (main main))
-  (setf +world+ scene)
-  (chase (vec 1 400) (unit :guard scene)))
+  (setf +world+ scene))
 
 (defmethod finalize :after ((main main))
   (setf +world+ NIL))
@@ -29,5 +28,5 @@
   (enter (make-instance 'camera) scene)
   (enter (make-instance 'render-pass) scene))
 
-(defun launch ()
-  (trial:launch 'main))
+(defun launch (&optional world)
+  (trial:launch 'main :world world))
