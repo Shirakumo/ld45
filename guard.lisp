@@ -1,5 +1,10 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
+(define-asset (ld45 guard) image
+    #p"guard.png"
+  :min-filter :nearest
+  :mag-filter :nearest)
+
 (defclass route-node ()
   ((location :initarg :location :initform (vec 0 0) :accessor location)
    (delay :initarg :delay :initform 0. :accessor delay)))
@@ -11,7 +16,7 @@
   (make-instance 'route-node :location location :delay delay))
 
 (define-asset (ld45 guard-mesh) mesh
-    (make-triangle 32 16 :orientation :right))
+    (make-rectangle 32 32))
 
 (define-global +guard-sway-aperture+ (->rad 45))
 (define-global +guard-patrol-speed+ 64)
@@ -19,8 +24,11 @@
 (define-global +guard-scan-time+ 5)
 (define-global +guard-down-time+ 10)
 
-(define-shader-subject guard (vertex-entity draggable solid)
+(define-shader-subject guard (draggable solid animated-sprite-subject)
   ((vertex-array :initform (asset 'ld45 'guard-mesh))
+   (size :initform (vec 32 32))
+   (bsize :initform (vec 16 16))
+   (texture :initform (asset 'ld45 'guard))
    (viewcone :initform (make-instance 'sector) :reader viewcone)
    (state :initform :return)
    (route :initform (make-array 0 :adjustable T :fill-pointer T) :accessor route)
@@ -29,7 +37,11 @@
    (end-action :initarg :end-action :initform :loop :accessor end-action)
    (chase-path :initform NIL :accessor chase-path)
    (look-timer :initform 0 :accessor look-timer)
-   (down-timer :initform 0 :accessor down-timer)))
+   (down-timer :initform 0 :accessor down-timer))
+  (:default-initargs
+   :animations '((stand 0 1)
+                 (walk 1 9)
+                 (down 9 14 :loop-to 13))))
 
 (defmethod initialize-instance :after ((guard guard) &key route)
   (loop for (x y d) in route
@@ -119,11 +131,17 @@
       (setf (direction (viewcone guard)) (vunit vel)))))
 
 (defmethod step :after ((guard guard) ev)
-  (setf (location (viewcone guard)) (location guard)))
+  (setf (location (viewcone guard)) (location guard))
+  (case (state guard)
+    (:down (setf (animation guard) 'down))
+    (T (if (v/= 0 (velocity guard))
+           (setf (animation guard) 'walk)
+           (setf (animation guard) 'stand)))))
 
 (defmethod down ((guard guard))
-  (setf (state guard) :down)
-  (setf (down-timer guard) +guard-down-time+))
+  (unless (eql :down (state guard))
+    (setf (state guard) :down)
+    (setf (down-timer guard) +guard-down-time+)))
 
 (defmethod chase ((target located-entity) (guard guard))
   (chase (location target) guard))
