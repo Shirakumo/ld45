@@ -96,7 +96,6 @@
                (< (v. (angle-point (angle entity))
                       (nvunit (v- (location player) (location entity))))
                   +takedown-dot-threshold+))
-      (v:info :player "Took down ~a" entity)
       (down entity)
       ;; You can only take down one at a time
       (for:end-for))))
@@ -116,6 +115,7 @@
 
 (define-handler (player continue-game) (ev)
   (when (eq :dead (state player))
+    (v:info :player "Restarting...")
     ;; FIXME: insert restart logic here
     ))
 
