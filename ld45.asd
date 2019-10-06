@@ -19,6 +19,7 @@
                (:file "guard")
                (:file "player")
                (:file "editor")
+               (:file "effects")
                (:file "main")
                (:file "v0"))
   :defsystem-depends-on (:deploy)

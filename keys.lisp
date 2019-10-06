@@ -95,3 +95,7 @@
 (define-action shoot (player-action)
   (key-release (one-of key :v))
   (gamepad-release (one-of button :a)))
+
+(define-action continue-game (player-action)
+  (key-press (one-of key :enter))
+  (gamepad-press (one-of button :home)))

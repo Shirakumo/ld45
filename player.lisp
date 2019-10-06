@@ -60,6 +60,7 @@
            (setf (state player) NIL)))
         (:dragging
          (move +dragging-move-speed+))
+        (:dead)
         (T
          (move +move-speed+))))))
 
@@ -77,13 +78,9 @@
          (setf (animation player) 'stand)))))
 
 (defmethod die ((player player))
-  (format T "~&
- _____  ______  _____  _____ ______ 
-|_   _| |  _  \\|_   _||  ___||  _  \\
-  | |   | | | |  | |  | |__  | | | |
-  | |   | | | |  | |  |  __| | | | |
- _| |_  | |/ /  _| |_ | |___ | |/ / 
- \\___/  |___/   \\___/ \\____/ |___/  "))
+  (let ((screen (make-instance 'screen :texture (asset 'ld45 'game-over))))
+    (transition screen +world+)
+    (enter screen +world+)))
 
 (defmethod collide ((player player) (guard guard) hit)
   (when (eql :chase (state guard))
@@ -116,6 +113,11 @@
          (drag entity player)
          ;; You can only drag one guard
          (for:end-for))))))
+
+(define-handler (player continue-game) (ev)
+  (when (eq :dead (state player))
+    ;; FIXME: insert restart logic here
+    ))
 
 (define-asset (ld45 bullet-mesh) mesh
     (make-rectangle 8 8))
