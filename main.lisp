@@ -1,18 +1,31 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
 (defclass main (trial:main)
-  ((scene :initform NIL))
+  ((scene :initform NIL)
+   (level-names :initform nil :accessor level-names)
+   (current-level-name :initform nil :accessor current-level-name))
   (:default-initargs
    :title "LD45"
    :width 1280
    :height 720))
 
-(defmethod initialize-instance ((main main) &key world)
+(defun level-packet (level-name)
+  (with-packet (packet (merge-pathnames (uiop:parse-unix-namestring level-name)
+                                        (pool-path 'ld45 nil))
+                       :direction :input)
+    packet))
+
+(defmethod initialize-instance ((main main) &key world level-names)
   (call-next-method)
+  (when level-names
+    (let ((first-level-name (first level-names)))
+      (setf (level-names main) level-names)
+      (setf (current-level-name main) first-level-name)
+      (setf world (level-packet first-level-name))))
   (setf (scene main)
-        (if world
-            (load-world world)
-            (make-instance 'empty-world))))
+        (cond
+          (world (load-world world))
+          (t (make-instance 'empty-world)))))
 
 (defmethod (setf scene) :after (scene (main main))
   (setf +world+ scene))

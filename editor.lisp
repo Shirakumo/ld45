@@ -55,6 +55,9 @@
 (define-handler (active-editor place-guard) (ev)
   (setf (mode active-editor) :place-guard))
 
+(define-handler (active-editor place-goal) (ev)
+  (setf (mode active-editor) :place-goal))
+
 ;;; Entity manipulation
 
 (defgeneric contained-p (point thing)
@@ -106,7 +109,14 @@
     (:place-guard
      (handle-place-guard-press active-editor pos button))
     (:placing-guard
-     (handle-placing-guard-press active-editor pos button))))
+     (handle-placing-guard-press active-editor pos button))
+    (:place-goal
+     (let* ((location (nvalign (world-location pos) +grid-size+))
+            (goal (make-instance 'goal
+                                 :location location)))
+       (transition goal +world+)
+       (enter goal +world+)
+       (setf (mode active-editor) :select)))))
 
 (define-handler (active-editor mouse-release) (ev pos button)
   (case (mode active-editor)

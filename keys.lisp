@@ -20,6 +20,9 @@
 (define-action place-guard (editor-command)
   (key-press (one-of key :f7)))
 
+(define-action place-goal (editor-command)
+  (key-press (one-of key :f8)))
+
 (define-action loop-guard-path (editor-command)
   (key-press (one-of key :l)))
 

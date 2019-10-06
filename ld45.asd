@@ -18,6 +18,7 @@
                (:file "viewcone2")
                (:file "guard")
                (:file "player")
+               (:file "goal")
                (:file "editor")
                (:file "effects")
                (:file "main")
