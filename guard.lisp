@@ -15,20 +15,14 @@
 (defun route-node (location delay)
   (make-instance 'route-node :location location :delay delay))
 
-(define-asset (ld45 guard-mesh) mesh
-    (make-rectangle 64 64))
-
 (define-global +guard-sway-aperture+ (->rad 30))
 (define-global +guard-patrol-speed+ 64)
 (define-global +guard-chase-speed+ 400)
 (define-global +guard-scan-time+ 5)
 (define-global +guard-down-time+ 10)
 
-(define-shader-subject guard (draggable solid animated-sprite-subject)
-  ((vertex-array :initform (asset 'ld45 'guard-mesh))
-   (size :initform (vec 32 32))
-   (bsize :initform (vec 32 32))
-   (texture :initform (asset 'ld45 'guard))
+(define-shader-subject guard (draggable solid human)
+  ((texture :initform (asset 'ld45 'guard))
    (viewcone :initform (make-instance 'sector) :reader viewcone)
    (state :initform :return)
    (route :initform (make-array 0 :adjustable T :fill-pointer T) :accessor route)

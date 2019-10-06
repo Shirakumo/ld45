@@ -61,3 +61,11 @@
 (defmethod drag ((draggable draggable) (dragger moving))
   (setf (dragger draggable) dragger)
   (setf (state dragger) :dragging))
+
+(define-asset (ld45 human) mesh
+    (make-rectangle 64 64))
+
+(define-shader-subject human (moving animated-sprite-subject)
+  ((vertex-array :initform (asset 'ld45 'human))
+   (size :initform (vec 32 32))
+   (bsize :initform (vec 32 32))))

@@ -1,7 +1,9 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
-(define-asset (ld45 player-mesh) mesh
-    (make-triangle 32 32 :orientation :right))
+(define-asset (ld45 player) image
+    #p"player.png"
+  :min-filter :nearest
+  :mag-filter :nearest)
 
 (define-global +move-speed+ 512)
 (define-global +dragging-move-speed+ 64)
@@ -11,10 +13,15 @@
 (define-global +bullet-speed+ 2048)
 (define-global +bullet-cooldown-time+ 1)
 
-(define-shader-subject player (vertex-entity moving)
+(define-shader-subject player (human)
   ((name :initform :player)
-   (vertex-array :initform (asset 'ld45 'player-mesh))
-   (move-timer :initform 0 :accessor move-timer)))
+   (texture :initform (asset 'ld45 'player))
+   (move-timer :initform 0 :accessor move-timer))
+  (:default-initargs
+   :animations '((stand 0 1)
+                 (walk 1 9)
+                 (drag 9 17)
+                 (shoot 17 18))))
 
 (defmethod contained-p ((point vec2) (player player))
   (let ((loc (location player))
@@ -24,29 +31,45 @@
 
 (defmethod step :before ((player player) ev)
   (let* ((vel (velocity player))
-         (dt (dt ev))
-         (move-speed (case (state player)
-                       (:dragging +dragging-move-speed+)
-                       (T +move-speed+))))
-    (loop for device in (cl-gamepad:devices)
-          for move = (vec (cl-gamepad:axis device 0)
-                          (cl-gamepad:axis device 1))
-          do (when (< 0.3 (vlength move))
-               (setf (vx move) (* (vx move) (vx move) (signum (vx move)) (cl-gamepad:axis-multiplier device 0)))
-               (setf (vy move) (* (vy move) (vy move) (signum (vy move)) (cl-gamepad:axis-multiplier device 1)))
-               (nv+ vel (nv* move move-speed dt))))
-    (cond
-      ((< 0 (move-timer player))
-       (decf (move-timer player) dt))
-      (t
-       (when (retained 'movement :left)
-         (decf (vx vel) (* dt 0.7 move-speed)))
-       (when (retained 'movement :right)
-         (incf (vx vel) (* dt 0.7 move-speed)))
-       (when (retained 'movement :up)
-         (incf (vy vel) (* dt 0.7 move-speed)))
-       (when (retained 'movement :down)
-         (decf (vy vel) (* dt 0.7 move-speed)))))))
+         (dt (dt ev)))
+    (flet ((move (speed)
+             (loop for device in (cl-gamepad:devices)
+                   for move = (vec (cl-gamepad:axis device 0)
+                                   (cl-gamepad:axis device 1))
+                   do (when (< 0.3 (vlength move))
+                        (setf (vx move) (* (vx move) (vx move) (signum (vx move)) (cl-gamepad:axis-multiplier device 0)))
+                        (setf (vy move) (* (vy move) (vy move) (signum (vy move)) (cl-gamepad:axis-multiplier device 1)))
+                        (nv+ vel (nv* move speed dt))))
+             (when (retained 'movement :left)
+               (decf (vx vel) (* dt 0.7 speed)))
+             (when (retained 'movement :right)
+               (incf (vx vel) (* dt 0.7 speed)))
+             (when (retained 'movement :up)
+               (incf (vy vel) (* dt 0.7 speed)))
+             (when (retained 'movement :down)
+               (decf (vy vel) (* dt 0.7 speed)))))
+      (case (state player)
+        (:shoot
+         (decf (move-timer player) dt)
+         (when (< 0 (move-timer player))
+           (setf (state player) NIL)))
+        (:dragging
+         (move +dragging-move-speed+))
+        (T
+         (move +move-speed+))))))
+
+(defmethod step :after ((player player) ev)
+  (case (state player)
+    (:dragging
+     (setf (animation player) 'drag)
+     (when (v= 0 (velocity player))
+       (reset-animation player)))
+    (:shoot
+     (setf (animation player) 'shoot))
+    (T
+     (if (v/= 0 (velocity player))
+         (setf (animation player) 'walk)
+         (setf (animation player) 'stand)))))
 
 (defmethod die ((player player))
   (format T "~&
@@ -111,4 +134,5 @@
                                  :location (vcopy (location player))
                                  :angle (angle player))))
       (enter bullet +world+)
+      (setf (state player) :shoot)
       (setf (move-timer player) +bullet-cooldown-time+))))
