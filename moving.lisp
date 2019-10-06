@@ -15,7 +15,10 @@
           while hit
           do (collide moving (hit-object hit) hit))
     (when (v/= vel 0)
-      (setf (angle moving) (point-angle vel)))
+      (setf (angle moving)
+            (case (state moving)
+              (:dragging (- (point-angle vel) PI))
+              (t (point-angle vel)))))
     (nv+ loc vel)))
 
 (defmethod step :around ((moving moving) ev)
@@ -46,8 +49,8 @@
 (defmethod step :after ((entity draggable) ev)
   (let ((d (dragger entity)))
     (when d
-      (setf (location entity) (nv+ (nv* (angle-point (angle d)) (bsize entity) -2) (location d)))
-      (setf (angle entity) (- (angle d) PI))
+      (setf (location entity) (nv+ (nv* (angle-point (- (angle d) PI)) (bsize entity) -2) (location d)))
+      (setf (angle entity) (angle d))
       (unless (eq :dragging (state d))
         (setf (dragger entity) NIL)))))
 
