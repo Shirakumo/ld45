@@ -10,14 +10,16 @@
          #+sbcl (sb-ext:defglobal ,name ,value)
          #-sbcl (defvar ,name ,value))))
 
+(defconstant PIF (float PI 0f0))
+
 (defun clamp (low mid high)
   (max low (min mid high)))
 
 (defun ->rad (deg)
-  (* PI (/ deg 180)))
+  (* PIF (/ deg 180)))
 
 (defun ->deg (rad)
-  (/ (* rad 180) PI))
+  (/ (* rad 180) PIF))
 
 (defun vrand (min max)
   (vec (+ min (random (- max min)))
@@ -25,7 +27,7 @@
 
 (defun vrandr (min max)
   (let ((r (+ min (random (- max min))))
-        (phi (random (* 2 PI))))
+        (phi (random (* 2 PIF))))
     (vec (* r (cos phi))
          (* r (sin phi)))))
 
@@ -64,7 +66,14 @@
      (* (vy a) (vx b))))
 
 (defun point-angle (point)
-  (atan (vy point) (vx point)))
+  (float (atan (vy point) (vx point)) 0f0))
+
+(defun normalize-angle (a)
+  (mod a (* 2 PIF)))
+
+(defun in-view-p (p a v)
+  (let ((diff (- (mod (+ (- p v) (* 3 PIF)) (* 2 PIF)) PIF)))
+    (<= (- a) diff (+ a))))
 
 (defun type-prototype (type)
   (case type

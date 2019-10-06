@@ -71,14 +71,17 @@
       (nv+ (velocity guard) (nv* dir speed)))))
 
 (defmethod step :before ((guard guard) ev)
-  (let ((route (route guard))
+  (let ((vel (velocity guard))
+        (route (route guard))
         (dt (dt ev)))
     (case (state guard)
       (:patrol
        (unless (move-towards guard (location (aref route (route-index guard)))
                              (* dt +guard-patrol-speed+))
          (setf (next-node-timer guard) (delay (aref route (route-index guard))))
-         (setf (state guard) :wait)))
+         (setf (state guard) :wait))
+       (when (v/= 0 vel)
+         (setf (direction (viewcone guard)) (vunit vel))))
       (:wait
        (decf (next-node-timer guard) dt)
        (when (< (next-node-timer guard) 0)
