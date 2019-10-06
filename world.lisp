@@ -13,17 +13,19 @@
 
 (defmethod scan ((world world) (target located-entity))
   (let ((result NIL)
-        (loc (location target)))
+        (loc (location target))
+        (hits ()))
     (do-container-tree (entity world result)
       (when (and (not (eq entity target))
                  (typep entity 'solid))
         (let ((hit (scan entity target)))
-          (when (and hit
-                     (or (null result)
-                         (< (vsqrdist2 loc (hit-location hit))
-                            (vsqrdist2 loc (hit-location result)))))
+          (when hit
             (setf (hit-object hit) entity)
-            (setf result hit)))))))
+            (push hit hits)))))
+    (flet ((thunk (a b)
+             (< (vsqrdist2 loc (hit-location a))
+                (vsqrdist2 loc (hit-location b)))))
+      (sort hits #'thunk))))
 
 (defclass empty-world (world)
   ((packet :initform NIL)))

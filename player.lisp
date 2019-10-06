@@ -82,7 +82,8 @@
 
 (defmethod collide ((player player) (guard guard) hit)
   (when (eql :chase (state guard))
-    (die player)))
+    (die player))
+  NIL)
 
 (define-handler (player attempt-takedown) (ev)
   (for:for ((entity over +world+))

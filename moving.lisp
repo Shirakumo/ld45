@@ -11,9 +11,10 @@
   (let ((loc (location moving))
         (vel (velocity moving)))
     (loop repeat 10
-          for hit = (scan +world+ moving)
-          while hit
-          do (collide moving (hit-object hit) hit))
+          for hits = (scan +world+ moving)
+          while hits
+          do (loop for hit in hits
+                   until (collide moving (hit-object hit) hit)))
     (when (v/= vel 0)
       (setf (angle moving)
             (case (state moving)
@@ -38,7 +39,8 @@
         (vel (velocity moving))
         (nor (hit-normal hit)))
     (nv+ loc (v* vel (hit-time hit)))
-    (nv- vel (v* nor (v. vel nor)))))
+    (nv- vel (v* nor (v. vel nor)))
+    T))
 
 (define-subject draggable (moving)
   ((dragger :initform NIL :accessor dragger)))
