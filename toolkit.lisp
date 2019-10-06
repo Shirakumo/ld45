@@ -3,6 +3,12 @@
 (define-pool ld45
   :base :ld45)
 
+(defmacro define-image (name path)
+  `(define-asset (ld45 ,name) image
+       ,path
+     :min-filter :nearest
+     :mag-filter :nearest))
+
 (defmacro define-global (name value)
   `(eval-when (:compile-toplevel :load-toplevel :execute)
      (if (boundp ',name)

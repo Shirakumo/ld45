@@ -1,9 +1,6 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
-(define-asset (ld45 player) image
-    #p"player.png"
-  :min-filter :nearest
-  :mag-filter :nearest)
+(define-image player #p"player.png")
 
 (define-global +move-speed+ 200)
 (define-global +dragging-move-speed+ 64)
@@ -16,12 +13,21 @@
 (define-shader-subject player (human)
   ((name :initform :player)
    (texture :initform (asset 'ld45 'player))
-   (move-timer :initform 0 :accessor move-timer))
+   (move-timer :initform 0 :accessor move-timer)
+   (capabilities :initarg :capabilities :initform NIL :accessor capabilities)
+   (interactable :initform NIL :accessor interactable)
+   (viewcone :initform (make-instance 'sector) :reader viewcone))
   (:default-initargs
    :animations '((stand 0 1)
                  (walk 1 9)
                  (drag 9 17)
                  (shoot 17 18))))
+
+(defmethod capable-of (thing (player (eql T)))
+  (capable-of thing (unit :player +world+)))
+
+(defmethod capable-of (thing (player player))
+  (find thing (capabilities player)))
 
 (defmethod contained-p ((point vec2) (player player))
   (let ((loc (location player))
@@ -65,6 +71,10 @@
          (move +move-speed+))))))
 
 (defmethod step :after ((player player) ev)
+  (unless (capable-of :clairvoyance player)
+    (let ((dir (angle-point (angle player))))
+      (setf (location (viewcone player)) (v- (location player) (v* dir 16)))
+      (setf (direction (viewcone player)) dir)))
   (case (state player)
     (:dragging
      (setf (animation player) 'drag)
@@ -79,6 +89,7 @@
 
 (defmethod die ((player player))
   (let ((screen (make-instance 'screen :texture (asset 'ld45 'game-over))))
+    (pushnew :clairvoyance (capabilities player))
     (transition screen +world+)
     (enter screen +world+)))
 
@@ -143,7 +154,8 @@
   (leave bullet +world+))
 
 (define-handler (player aim) (ev)
-  (when (eql NIL (state player))
+  (when (and (eql NIL (state player))
+             (capable-of :shoot player))
     (setf (move-timer player) +bullet-cooldown-time+)
     (setf (state player) :aim)))
 

@@ -43,4 +43,35 @@ void main(){
   color = texture(screen, tex_coord)*strength;
 }")
 
+(define-shader-pass fog-of-war (per-object-pass)
+  ((color :port-type output :attachment :color-attachment0 :texspec (:internal-format :red))))
 
+(defmethod coerce-pass-shader ((pass fog-of-war) object (type (eql :fragment-shader)))
+  (trial::effective-shader type pass))
+
+(defmethod paint-with ((pass fog-of-war) (scene scene))
+  (let ((player (unit :player scene)))
+    (cond ((or (capable-of :clairvoyance player)
+               (active-p (unit :editor scene)))
+           (gl:clear-color 1 1 1 1)
+           (gl:clear :color-buffer)
+           (gl:clear-color 0 0 0 0))
+          (T
+           (paint (viewcone player) pass)))))
+
+(define-class-shader (fog-of-war :fragment-shader)
+  "out vec4 color;
+void main(){
+  color = vec4(1);
+}")
+
+(define-shader-pass lighting-pass (render-pass)
+  ((fog :port-type input)))
+
+(define-class-shader (lighting-pass :fragment-shader)
+  "uniform sampler2D fog; 
+out vec4 color;
+
+void main(){
+  color *= texelFetch(fog, ivec2(gl_FragCoord.xy), 0).r;
+}")

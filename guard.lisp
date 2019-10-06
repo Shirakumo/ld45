@@ -23,7 +23,7 @@
 
 (define-shader-subject guard (draggable solid human)
   ((texture :initform (asset 'ld45 'guard))
-   (viewcone :initform (make-instance 'sector) :reader viewcone)
+   (viewcone :initform (make-instance 'sector :radius 300) :reader viewcone)
    (state :initform :return)
    (route :initform (make-array 0 :adjustable T :fill-pointer T) :accessor route)
    (route-index :initarg :route-index :initform 0 :accessor route-index)

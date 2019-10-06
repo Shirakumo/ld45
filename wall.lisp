@@ -22,3 +22,13 @@
 
 (defmethod paint :before ((wall wall) target)
   (scale-by (vx (size wall)) (vy (size wall)) 1))
+
+(defmethod paint :around ((wall wall) target)
+  (when (active-p (unit :editor +world+))
+    (call-next-method)))
+
+(define-class-shader (wall :fragment-shader)
+  "out vec4 color;
+void main(){
+  color = vec4(0, 1, 0, 0.5);
+}")

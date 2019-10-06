@@ -31,6 +31,7 @@
   ((packet :initform NIL)))
 
 (defmethod initialize-instance :after ((world empty-world) &key)
+  (enter (make-instance 'ground :texture (asset 'ld45 'map1)) world)
   (enter (make-instance 'wall :location (vec 0 128)) world)
   (enter (make-instance 'wall :location (vec -512 0) :size (vec 32 1024)) world)
   (enter (make-instance 'wall :location (vec +512 0) :size (vec 32 1024)) world)

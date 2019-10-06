@@ -5,6 +5,7 @@
    (level-names :initform nil :accessor level-names)
    (current-level-name :initform nil :accessor current-level-name))
   (:default-initargs
+   :clear-color (vec4 0 0 0 0)
    :title "LD45"
    :width 1280
    :height 720))
@@ -34,12 +35,17 @@
   (setf +world+ NIL))
 
 (defmethod setup-rendering :after ((main main))
-  (disable :cull-face :scissor-test :depth-test))
+  (disable :cull-face :scissor-test :depth-test :stencil-test))
 
 (defmethod setup-scene ((main main) scene)
   (enter (make-instance 'inactive-editor) scene)
   (enter (make-instance 'camera) scene)
-  (enter (make-instance 'render-pass) scene))
+  (let ((fog-of-war (make-instance 'fog-of-war))
+        (blur-pass (make-instance 'radial-blur-pass :uniforms `(("strength" 0.2)
+                                                                ("samples" 36))))
+        (light (make-instance 'lighting-pass)))
+    (connect (port fog-of-war 'color) (port blur-pass 'previous-pass) scene)
+    (connect (port blur-pass 'color) (port light 'fog) scene)))
 
 (defun launch (&optional world)
   (trial:launch 'main :world world))
