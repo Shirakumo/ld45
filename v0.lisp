@@ -37,6 +37,29 @@
   `(wall :location ,(encode (location wall))
          :size ,(encode (size wall))))
 
+(define-decoder (guard v0) (data _p)
+  (destructuring-bind (&key location angle
+                         route route-index route-direction end-action)
+      data
+    (make-instance 'guard
+                   :location (decode 'vec2 location)
+                   :angle angle
+                   :route route
+                   :route-index route-index
+                   :route-direction route-direction
+                   :end-action end-action)))
+
+(define-encoder (guard v0) (_b _p)
+  `(guard :location ,(encode (location guard))
+          :angle ,(angle guard)
+          :route ,(loop for node across (route guard)
+                        collect (list (vx (location node))
+                                      (vy (location node))
+                                      (delay node)))
+          :route-index ,(route-index guard)
+          :route-direction ,(route-direction guard)
+          :end-action ,(end-action guard)))
+
 (define-decoder (vec2 v0) (data _p)
   (destructuring-bind (x y) data
     (vec2 x y)))
