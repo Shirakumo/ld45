@@ -65,9 +65,9 @@
   (setf (state dragger) :dragging))
 
 (define-asset (ld45 human) mesh
-    (make-rectangle 64 64))
+    (make-rectangle 32 32))
 
 (define-shader-subject human (moving animated-sprite-subject)
   ((vertex-array :initform (asset 'ld45 'human))
    (size :initform (vec 32 32))
-   (bsize :initform (vec 32 32))))
+   (bsize :initform (vec 16 16))))

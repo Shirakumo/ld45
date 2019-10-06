@@ -11,7 +11,7 @@
 (define-global +takedown-dot-threshold+ -0.9)
 (define-global +dragging-max-distance+ 24)
 (define-global +bullet-speed+ 2048)
-(define-global +bullet-cooldown-time+ 1)
+(define-global +bullet-cooldown-time+ 0.5)
 
 (define-shader-subject player (human)
   ((name :initform :player)
@@ -49,9 +49,14 @@
              (when (retained 'movement :down)
                (decf (vy vel) (* dt 0.7 speed)))))
       (case (state player)
+        (:aim
+         (move 1)
+         (when (v/= 0 vel)
+           (setf (angle player) (point-angle vel))
+           (vsetf vel 0 0)))
         (:shoot
          (decf (move-timer player) dt)
-         (when (< 0 (move-timer player))
+         (when (< (move-timer player) 0)
            (setf (state player) NIL)))
         (:dragging
          (move +dragging-move-speed+))
@@ -64,7 +69,7 @@
      (setf (animation player) 'drag)
      (when (v= 0 (velocity player))
        (reset-animation player)))
-    (:shoot
+    ((:shoot :aim)
      (setf (animation player) 'shoot))
     (T
      (if (v/= 0 (velocity player))
@@ -112,8 +117,15 @@
          ;; You can only drag one guard
          (for:end-for))))))
 
-(define-shader-subject bullet (vertex-entity moving)
-  ((vertex-array :initform (asset 'ld45 'player-mesh))))
+(define-asset (ld45 bullet-mesh) mesh
+    (make-rectangle 8 8))
+
+(define-asset (ld45 bullet) image
+    #p"bullet.png")
+
+(define-shader-subject bullet (vertex-entity textured-entity moving)
+  ((vertex-array :initform (asset 'ld45 'bullet-mesh))
+   (texture :initform (asset 'ld45 'bullet))))
 
 (defmethod step :before ((bullet bullet) ev)
   (setf (velocity bullet)
@@ -128,12 +140,16 @@
 (defmethod collide ((bullet bullet) (wall wall) hit)
   (leave bullet +world+))
 
+(define-handler (player aim) (ev)
+  (when (eql NIL (state player))
+    (setf (move-timer player) +bullet-cooldown-time+)
+    (setf (state player) :aim)))
+
 (define-handler (player shoot) (ev)
-  (when (and (<= (move-timer player) 0)
-             (zerop (vlength (velocity player))))
+  (when (eql :aim (state player))
     (let ((bullet (make-instance 'bullet
                                  :location (vcopy (location player))
                                  :angle (angle player))))
-      (enter bullet +world+)
-      (setf (state player) :shoot)
-      (setf (move-timer player) +bullet-cooldown-time+))))
+      (transition bullet +world+)
+      (enter bullet +world+))
+    (setf (state player) :shoot)))

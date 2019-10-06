@@ -88,6 +88,10 @@
   (key-press (one-of key :e))
   (gamepad-press (one-of button :b)))
 
-(define-action shoot (player-action)
+(define-action aim (player-action)
   (key-press (one-of key :v))
   (gamepad-press (one-of button :a)))
+
+(define-action shoot (player-action)
+  (key-release (one-of key :v))
+  (gamepad-release (one-of button :a)))
