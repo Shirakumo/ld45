@@ -49,7 +49,7 @@
 (defmethod step :after ((entity draggable) ev)
   (let ((d (dragger entity)))
     (when d
-      (setf (location entity) (nv+ (nv* (angle-point (- (angle d) PI)) (bsize entity) -2) (location d)))
+      (setf (location entity) (nv+ (nv* (angle-point (- (angle d) PI)) (bsize entity) -1.5) (location d)))
       (setf (angle entity) (angle d))
       (unless (eq :dragging (state d))
         (setf (dragger entity) NIL)))))
