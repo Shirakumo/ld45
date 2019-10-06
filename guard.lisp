@@ -62,7 +62,9 @@
   (register-object-for-pass pass (viewcone guard)))
 
 (defmethod paint :around ((guard guard) pass)
-  (unless (eql :down (state guard))
+  (when (and (not (eql :down (state guard)))
+             ;(capable-of :line-of-sight T)
+             )
     (paint (viewcone guard) pass))
   (call-next-method))
 
@@ -93,6 +95,7 @@
                              (* dt +guard-patrol-speed+))
          (setf (look-timer guard) (delay (aref route (route-index guard))))
          (setf (state guard) :look))
+       (setf (direction (viewcone guard)) (nvunit vel))
        (when (visible-p (location (unit :player T)) (viewcone guard))
          (chase (unit :player T) guard)))
       (:look
@@ -114,18 +117,18 @@
                                  (* dt +guard-chase-speed+)))
               (when (visible-p (location (unit :player T)) (viewcone guard))
                 (chase (unit :player T) guard))
-              (pop (chase-path guard)))))
+              (pop (chase-path guard)))
+             ((visible-p (location (unit :player T)) (viewcone guard))
+              (setf (direction (viewcone guard)) (nvunit (v- (location (unit :player T)) (location guard)))))))
       (:down
        (decf (down-timer guard) dt)
        (when (<= (down-timer guard) 0)
          (when (dragger guard)
            (setf (dragger guard) NIL))
-         (setf (state guard) :return))))
-    (when (v/= 0 vel)
-      (setf (direction (viewcone guard)) (vunit vel)))))
+         (setf (state guard) :return))))))
 
 (defmethod step :after ((guard guard) ev)
-  (setf (location (viewcone guard)) (location guard))
+  (setf (location (viewcone guard)) (vcopy (location guard)))
   (case (state guard)
     (:down
      (setf (animation guard) 'down))
