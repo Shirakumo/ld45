@@ -79,3 +79,11 @@
     (end-right (setf (retained 'movement :right) NIL))
     (end-up (setf (retained 'movement :up) NIL))
     (end-down (setf (retained 'movement :down) NIL))))
+
+(define-action attempt-takedown (player-action)
+  (key-press (one-of key :f))
+  (gamepad-press (one-of button :x)))
+
+(define-action toggle-dragging (player-action)
+  (key-press (one-of key :e))
+  (gamepad-press (one-of button :b)))

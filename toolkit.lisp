@@ -68,6 +68,9 @@
 (defun point-angle (point)
   (float (atan (vy point) (vx point)) 0f0))
 
+(defun angle-point (angle)
+  (vec (cos angle) (sin angle)))
+
 (defun normalize-angle (a)
   (mod a (* 2 PIF)))
 
