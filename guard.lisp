@@ -63,8 +63,8 @@
 
 (defmethod paint :around ((guard guard) pass)
   (when (and (not (eql :down (state guard)))
-             ;(capable-of :line-of-sight T)
-             )
+             (or (capable-of :line-of-sight T)
+                 (active-p (unit :editor +world+))))
     (paint (viewcone guard) pass))
   (call-next-method))
 

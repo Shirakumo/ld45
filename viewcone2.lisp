@@ -260,7 +260,7 @@
                             (setf blocker edge))))
                (let ((point-on-arc (or (null tt) (<= 0 (- (+ hit-dist2 EPS) (radius2 sector))))))
                  (when point-on-arc
-                   (let ((unit-ray (vunit ray)))
+                   (let ((unit-ray (if (v= 0 ray) ray (vunit ray))))
                      (setf hit-point (nv+ (v* unit-ray (radius sector)) (location sector)))
                      (when prev-point-on-arc
                        (let ((needs-arc T))

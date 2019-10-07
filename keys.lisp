@@ -11,17 +11,8 @@
 (define-action delete-entity (editor-command)
   (key-press (one-of key :delete)))
 
-(define-action place-wall (editor-command)
+(define-action place (editor-command)
   (key-press (one-of key :f5)))
-
-(define-action place-player (editor-command)
-  (key-press (one-of key :f6)))
-
-(define-action place-guard (editor-command)
-  (key-press (one-of key :f7)))
-
-(define-action place-goal (editor-command)
-  (key-press (one-of key :f8)))
 
 (define-action loop-guard-path (editor-command)
   (key-press (one-of key :l)))
@@ -102,3 +93,7 @@
 (define-action continue-game (player-action)
   (key-press (one-of key :enter))
   (gamepad-press (one-of button :start)))
+
+(define-action interact (player-action)
+  (key-press (one-of key :space :enter :e))
+  (gamepad-press (one-of button :a)))

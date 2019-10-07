@@ -21,12 +21,12 @@
         :author (author world)
         :payload "data"))
 
-(define-decoder (player v0) (data _p)
+(define-decoder (located-entity v0) (data _p)
   (destructuring-bind (&key location) data
-    (make-instance 'player :location (decode 'vec2 location))))
+    (make-instance (class-of located-entity) :location (decode 'vec2 location))))
 
-(define-encoder (player v0) (_b _p)
-  `(player :location ,(encode (location player))))
+(define-encoder (located-entity v0) (_b _p)
+  `(,(type-of located-entity) :location ,(encode (location located-entity))))
 
 (define-decoder (wall v0) (data _p)
   (destructuring-bind (&key size location) data
@@ -59,6 +59,13 @@
           :route-index ,(route-index guard)
           :route-direction ,(route-direction guard)
           :end-action ,(end-action guard)))
+
+(define-decoder (ground v0) (data _p)
+  (destructuring-bind (&key texture) data
+    (make-instance (class-of ground) :texture (decode 'asset texture))))
+
+(define-encoder (ground v0) (_b _p)
+  `(,(type-of ground) :texture ,(encode (texture ground))))
 
 (define-decoder (vec2 v0) (data _p)
   (destructuring-bind (x y) data

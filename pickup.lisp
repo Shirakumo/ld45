@@ -3,14 +3,21 @@
 (define-asset (ld45 pickup-mesh) mesh
     (make-rectangle 16 16))
 
-(define-shader-entity pickup (vertex-entity textured-entity located-entity solid)
+(define-shader-entity pickup (vertex-entity textured-entity located-entity solid game-entity)
   ((vertex-array :initform (asset 'ld45 'pickup-mesh))))
+
+(defmethod scan ((pickup pickup) (moving moving))
+  (aabb (location moving) (velocity moving)
+        (location pickup) (v+ (bsize moving) 8)))
 
 (defmethod collide ((player player) (pickup pickup) hit)
   (setf (interactable player) pickup)
   NIL)
 
 (defgeneric pickup (pickup player))
+
+(defmethod pickup :after ((pickup pickup) thing)
+  (leave pickup +world+))
 
 (define-image gun #p"gun.png")
 

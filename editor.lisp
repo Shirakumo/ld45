@@ -1,6 +1,7 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
 (defparameter +grid-size+ 32)
+(defparameter +editable-items+ '(wall guard player goal gun radar bionic-eye))
 
 (define-subject editor (located-entity)
   ((name :initform :editor)
@@ -8,7 +9,8 @@
    (mode :initform :select :accessor mode)
    (vel :initform (vec 0 0) :accessor vel)
    (start-location :initform nil :accessor start-location)
-   (visible-path :initform nil :accessor visible-path)))
+   (visible-path :initform nil :accessor visible-path)
+   (to-place :initform 'wall :accessor to-place)))
 
 (define-subject inactive-editor (editor)
   ())
@@ -46,17 +48,12 @@
 (define-handler (active-editor delete-entity) (ev)
   (setf (mode active-editor) :delete))
 
-(define-handler (active-editor place-wall) (ev)
-  (setf (mode active-editor) :place-wall))
-
-(define-handler (active-editor place-player) (ev)
-  (setf (mode active-editor) :place-player))
-
-(define-handler (active-editor place-guard) (ev)
-  (setf (mode active-editor) :place-guard))
-
-(define-handler (active-editor place-goal) (ev)
-  (setf (mode active-editor) :place-goal))
+(define-handler (active-editor place) (ev)
+  (case (to-place active-editor)
+    (wall (setf (mode active-editor) :place-wall))
+    (player (setf (mode active-editor) :place-player))
+    (guard (setf (mode active-editor) :place-guard))
+    (T (setf (mode active-editor) :place))))
 
 ;;; Entity manipulation
 
@@ -98,6 +95,7 @@
                                  :location location
                                  :size (vec2 0 0))))
        (setf (start-location active-editor) location)
+       (transition wall +world+)
        (enter wall +world+)
        (setf (entity active-editor) wall)
        (setf (mode active-editor) :placing-wall)))
@@ -111,9 +109,9 @@
      (handle-place-guard-press active-editor pos button))
     (:placing-guard
      (handle-placing-guard-press active-editor pos button))
-    (:place-goal
+    (:place
      (let* ((location (nvalign (world-location pos) +grid-size+))
-            (goal (make-instance 'goal
+            (goal (make-instance (to-place active-editor)
                                  :location location)))
        (transition goal +world+)
        (enter goal +world+)
@@ -151,12 +149,16 @@
      (update-scene-cache +world+ +world+))))
 
 (define-handler (active-editor mouse-scroll) (ev delta)
-  (when (or (retained 'key :control)
-            (retained 'key :left-control) (retained 'key :control-l)
-            (retained 'key :right-control) (retained 'key :control-r))
-    (handle-editor-zoom delta))
-  (when (eq :placing-guard (mode active-editor))
-    (handle-modify-guard-delay active-editor (if (< 0 delta) 1 -1))))
+  (cond ((or (retained 'key :control)
+              (retained 'key :left-control) (retained 'key :control-l)
+              (retained 'key :right-control) (retained 'key :control-r))
+         (handle-editor-zoom delta))
+        ((eq :placing-guard (mode active-editor))
+         (handle-modify-guard-delay active-editor (if (< 0 delta) 1 -1)))
+        (T
+         (let ((pos (position (to-place active-editor) +editable-items+)))
+           (setf (to-place active-editor) (elt +editable-items+ (mod (+ pos (round delta)) (length +editable-items+))))
+           (v:info :editor "Now placing ~s." (to-place active-editor))))))
 
 (define-handler (active-editor tick) (ev)
   (update-visible-path active-editor)

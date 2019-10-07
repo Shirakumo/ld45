@@ -31,14 +31,7 @@
   ((packet :initform NIL)))
 
 (defmethod initialize-instance :after ((world empty-world) &key)
-  (enter (make-instance 'ground :texture (asset 'ld45 'map1)) world)
-  (enter (make-instance 'wall :location (vec 0 128)) world)
-  (enter (make-instance 'wall :location (vec -512 0) :size (vec 32 1024)) world)
-  (enter (make-instance 'wall :location (vec +512 0) :size (vec 32 1024)) world)
-  (enter (make-instance 'wall :location (vec 0 -512) :size (vec 1024 32)) world)
-  (enter (make-instance 'wall :location (vec 0 +512) :size (vec 1024 32)) world)
-  ;;  (enter (make-instance 'guard :location (vec 0 256) :route '((128 254 0) (0 512 1) (-128 256 0))) world)
-  (enter (make-instance 'guard :location (vec 0 -256) :name :guard) world)
+  (enter (make-instance 'ground :texture (asset 'ld45 'map3)) world)
   (enter (make-instance 'player) world)
   (update-scene-cache world world)
   (change-class world 'world))
@@ -55,7 +48,7 @@
   (load-world (packet world)))
 
 (defmethod load-world ((pathname pathname))
-  (with-packet (packet pathname :direction :input)
+  (with-packet (packet (pool-path 'ld45 pathname) :direction :input)
     (load-world packet)))
 
 (defmethod load-world ((packet packet))

@@ -1,6 +1,7 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
 (define-image player #p"player.png")
+(defvar *capabilities* ())
 
 (define-global +move-speed+ 200)
 (define-global +dragging-move-speed+ 64)
@@ -14,7 +15,7 @@
   ((name :initform :player)
    (texture :initform (asset 'ld45 'player))
    (move-timer :initform 0 :accessor move-timer)
-   (capabilities :initarg :capabilities :initform NIL :accessor capabilities)
+   (capabilities :initarg :capabilities :initform *capabilities* :accessor capabilities)
    (interactable :initform NIL :accessor interactable)
    (viewcone :initform (make-instance 'sector) :reader viewcone))
   (:default-initargs
@@ -22,6 +23,9 @@
                  (walk 1 9)
                  (drag 9 17)
                  (shoot 17 18))))
+
+(defmethod register-object-for-pass :after (pass (player player))
+  (register-object-for-pass pass (viewcone player)))
 
 (defmethod capable-of (thing (player (eql T)))
   (capable-of thing (unit :player +world+)))
@@ -127,8 +131,8 @@
 (define-handler (player continue-game) (ev)
   (when (eq :dead (state player))
     (v:info :player "Restarting...")
-    ;; FIXME: insert restart logic here
-    ))
+    (let ((main (handler *context*)))
+      (change-scene main (load-world (level-packet (current-level-name main)))))))
 
 (define-asset (ld45 bullet-mesh) mesh
     (make-rectangle 8 8))
@@ -167,3 +171,7 @@
       (transition bullet +world+)
       (enter bullet +world+))
     (setf (state player) :shoot)))
+
+(define-handler (player interact) (ev)
+  (when (interactable player)
+    (pickup (interactable player) player)))

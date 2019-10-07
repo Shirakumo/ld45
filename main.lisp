@@ -2,7 +2,7 @@
 
 (defclass main (trial:main)
   ((scene :initform NIL)
-   (level-names :initform nil :accessor level-names)
+   (level-names :initform () :accessor level-names)
    (current-level-name :initform nil :accessor current-level-name))
   (:default-initargs
    :clear-color (vec4 0 0 0 0)
@@ -48,4 +48,4 @@
     (connect (port blur-pass 'color) (port light 'fog) scene)))
 
 (defun launch (&optional world)
-  (trial:launch 'main :world world))
+  (trial:launch 'main :world world :level-names '("map1/" "map2/" "map3/")))
