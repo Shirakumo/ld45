@@ -95,7 +95,8 @@
                              (* dt +guard-patrol-speed+))
          (setf (look-timer guard) (delay (aref route (route-index guard))))
          (setf (state guard) :look))
-       (setf (direction (viewcone guard)) (nvunit vel))
+       (when (v/= 0 vel)
+         (setf (direction (viewcone guard)) (nvunit vel)))
        (when (visible-p (location (unit :player T)) (viewcone guard))
          (chase (unit :player T) guard)))
       (:look
@@ -125,7 +126,9 @@
        (when (<= (down-timer guard) 0)
          (when (dragger guard)
            (setf (dragger guard) NIL))
-         (setf (state guard) :return))))))
+         (if (/= 0 (length route))
+             (chase (location (aref route (route-index guard))) guard)
+             (setf (state guard) :return)))))))
 
 (defmethod step :after ((guard guard) ev)
   (setf (location (viewcone guard)) (vcopy (location guard)))
