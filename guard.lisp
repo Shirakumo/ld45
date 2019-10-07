@@ -18,6 +18,7 @@
 (define-global +guard-sway-aperture+ (->rad 30))
 (define-global +guard-patrol-speed+ 64)
 (define-global +guard-chase-speed+ 150)
+(define-global +guard-turn-speed+ PI)
 (define-global +guard-scan-time+ 5)
 (define-global +guard-down-time+ 20)
 
@@ -31,6 +32,8 @@
    (end-action :initarg :end-action :initform :loop :accessor end-action)
    (chase-path :initform NIL :accessor chase-path)
    (look-timer :initform 0 :accessor look-timer)
+   (turn-to :initform NIL :accessor turn-to)
+   (turn-state :initform NIL :accessor turn-state)
    (down-timer :initform 0 :accessor down-timer))
   (:default-initargs
    :animations '((stand 0 1)
@@ -73,7 +76,7 @@
              (not (<= 0 index (1- (length (route guard))))))
     (ecase (end-action guard)
       (:loop
-         (setf (route-index guard) 0))
+        (setf (route-index guard) 0))
       (:reverse
        (setf (route-direction guard) (* -1 (route-direction guard)))
        (incf (route-index guard) (route-direction guard))))))
@@ -91,10 +94,12 @@
       (:return
         (setf (state guard) (if (/= 0 (length route)) :patrol :look)))
       (:patrol
-       (unless (move-towards guard (location (aref route (route-index guard)))
-                             (* dt +guard-patrol-speed+))
-         (setf (look-timer guard) (delay (aref route (route-index guard))))
-         (setf (state guard) :look))
+       (let* ((target (location (aref route (route-index guard))))
+              (dir (v- target (location guard))))
+         (unless (or (and (v/= dir 0) (turn (point-angle (nvunit dir)) guard :patrol))
+                     (move-towards guard target (* dt +guard-patrol-speed+)))
+           (setf (look-timer guard) (delay (aref route (route-index guard))))
+           (setf (state guard) :look)))
        (when (v/= 0 vel)
          (setf (direction (viewcone guard)) (nvunit vel)))
        (when (visible-p (location (unit :player T)) (viewcone guard))
@@ -121,6 +126,23 @@
               (pop (chase-path guard)))
              ((visible-p (location (unit :player T)) (viewcone guard))
               (setf (direction (viewcone guard)) (nvunit (v- (location (unit :player T)) (location guard)))))))
+      (:turn
+       (let ((angle (normalize-angle (angle guard)))
+             (target (turn-to guard))
+             (speed (* dt +guard-turn-speed+)))
+         (when (or (and (< target angle) (< (- angle target) PI))
+                   (and (< angle target) (< (- (+ angle (* 2 PI)) target) PI)))
+           (setf speed (- speed)))
+         (incf angle speed)
+         (when (or (<= (angle guard) target angle)
+                   (<= angle target (angle guard))
+                   (< (abs (- angle target)) 0.1))
+           (setf (state guard) (turn-state guard))
+           (setf angle target))
+         (setf (angle guard) angle)
+         (setf (direction (viewcone guard)) (angle-point angle))
+         (when (visible-p (location (unit :player T)) (viewcone guard))
+           (chase (unit :player T) guard))))
       (:down
        (decf (down-timer guard) dt)
        (when (<= (down-timer guard) 0)
@@ -151,3 +173,24 @@
 (defmethod chase ((target vec2) (guard guard))
   (setf (chase-path guard) (nreverse (find-path (path-map +world+) (location guard) target)))
   (setf (state guard) :chase))
+
+(defmethod turn ((target number) (guard guard) turn-state)
+  (setf (turn-state guard) turn-state)
+  (let ((target (normalize-angle target))
+        (angle (normalize-angle (angle guard))))
+    (cond
+      ((< 0.1 (abs (- angle target)))
+       (setf (turn-to guard) target)
+       (setf (state guard) :turn)
+       T)
+      (T
+       (setf (angle guard) target)
+       (setf (direction (viewcone guard)) (angle-point target))
+       (setf (state guard) (turn-state guard))
+       NIL))))
+
+(defmethod collide ((guard guard) dummy hit)
+  (declare (ignore guard dummy hit)))
+
+(defmethod collide (dummy (guard guard) hit)
+  (declare (ignore guard dummy hit)))
