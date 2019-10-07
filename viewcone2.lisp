@@ -217,8 +217,8 @@
                                 (cond (blocking
                                        (vector-push-extend edge blocking-edges))
                                       ((and test-seg-seg-xsect
-                                            (or (test-edge (cons (location sector) (sector-ledge sector)))
-                                                (test-edge (cons (location sector) (sector-redge sector)))))
+                                            (or (test-edge (cons (location sector) (v+ (location sector) (sector-ledge sector))))
+                                                (test-edge (cons (location sector) (v+ (location sector) (sector-redge sector))))))
                                        (vector-push-extend edge blocking-edges))))))))))))))
 
 (defun make-rays (sector points)
