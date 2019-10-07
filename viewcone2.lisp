@@ -8,7 +8,7 @@
   ((radius :initarg :radius :initform 512 :accessor radius)
    (radius2 :accessor radius2)
    (direction :initform (vec 1 0) :accessor direction)
-   (aperture :initform (->rad 30) :accessor aperture)
+   (aperture :initform (->rad 30) :initarg :aperture :accessor aperture)
    (sector-ledge :initform (vec 0 0) :accessor sector-ledge)
    (sector-redge :initform (vec 0 0) :accessor sector-redge)
    (blocking-edges :initform (make-array 0 :adjustable T :fill-pointer T) :reader blocking-edges)))

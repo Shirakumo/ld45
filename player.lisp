@@ -17,7 +17,7 @@
    (move-timer :initform 0 :accessor move-timer)
    (capabilities :initarg :capabilities :initform () :accessor capabilities)
    (interactable :initform NIL :accessor interactable)
-   (viewcone :initform (make-instance 'sector) :reader viewcone))
+   (viewcone :initform (make-instance 'sector :aperture (->rad 45)) :reader viewcone))
   (:default-initargs
    :animations '((stand 0 1)
                  (walk 1 9)

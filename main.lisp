@@ -18,7 +18,7 @@
 
 (defmethod initialize-instance ((main main) &key world level-names)
   (call-next-method)
-  (when level-names
+  (when (and level-names (null world))
     (let ((first-level-name (first level-names)))
       (setf (level-names main) level-names)
       (setf (current-level-name main) first-level-name)
@@ -41,11 +41,12 @@
   (enter (make-instance 'inactive-editor) scene)
   (enter (make-instance 'camera) scene)
   (let ((fog-of-war (make-instance 'fog-of-war))
-        (blur-pass (make-instance 'radial-blur-pass :uniforms `(("strength" 0.2)
-                                                                ("samples" 36))))
+        (h-blur (make-instance 'gaussian-blur-pass :uniforms `(("dir" ,(vec 1 1)) ("intensity" 4.0))))
+        (v-blur (make-instance 'gaussian-blur-pass :uniforms `(("dir" ,(vec 0 1)) ("intensity" 4.0))))
         (light (make-instance 'lighting-pass)))
-    (connect (port fog-of-war 'color) (port blur-pass 'previous-pass) scene)
-    (connect (port blur-pass 'color) (port light 'fog) scene)))
+    (connect (port fog-of-war 'color) (port h-blur 'previous-pass) scene)
+    (connect (port h-blur 'color) (port v-blur 'previous-pass) scene)
+    (connect (port v-blur 'color) (port light 'fog) scene)))
 
 (defun launch (&optional world)
   (trial:launch 'main :world world :level-names '("intro/" "map1/" "map2/" "map3/")))
