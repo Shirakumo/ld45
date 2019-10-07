@@ -66,9 +66,10 @@
 (defun world-location (screen-position)
   (let ((camera (unit :camera t))
         (loc (vcopy screen-position)))
-    (prog1 loc
-      (nv+ (nv/ loc (view-scale camera)) (location camera))
-      (nv- loc (v/ (target-size camera) (zoom camera))))))
+    (nv+ (nv/ loc (view-scale camera)) (location camera))
+    (nv- loc (v/ (target-size camera) (zoom camera)))
+    (decf (vy loc) (/ (vy (target-size camera)) 1/2 (zoom camera)))
+    loc))
 
 (defun entity-at-point (point world)
   (for:for ((entity over world))
