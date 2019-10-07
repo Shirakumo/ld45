@@ -17,6 +17,7 @@
   (let ((program (shader-program-for-pass pass screen))
         (vao (vertex-array screen)))
     (setf (uniform program "strength") (float (- 1 (fade-timer screen)) 0f0))
+    (gl:active-texture :texture0)
     (gl:bind-texture :texture-2d (gl-name (texture screen)))
     (gl:bind-vertex-array (gl-name vao))
     (%gl:draw-elements :triangles (size vao) :unsigned-int (cffi:null-pointer))))
