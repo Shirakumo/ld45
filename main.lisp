@@ -48,4 +48,4 @@
     (connect (port blur-pass 'color) (port light 'fog) scene)))
 
 (defun launch (&optional world)
-  (trial:launch 'main :world world :level-names '("map1/" "map2/" "map3/")))
+  (trial:launch 'main :world world :level-names '("intro/" "map1/" "map2/" "map3/")))

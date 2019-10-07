@@ -28,6 +28,16 @@
 (define-encoder (located-entity v0) (_b _p)
   `(,(type-of located-entity) :location ,(encode (location located-entity))))
 
+(define-decoder (player v0) (data _p)
+  (destructuring-bind (&key location capabilities) data
+    (make-instance (class-of player) :location (decode 'vec2 location)
+                                     :capabilities (or capabilities *capabilities*))))
+
+(define-decoder (goal v0) (data _p)
+  (destructuring-bind (&key location reset) data
+    (make-instance (class-of goal) :location (decode 'vec2 location)
+                                   :reset reset)))
+
 (define-decoder (wall v0) (data _p)
   (destructuring-bind (&key size location) data
     (make-instance 'wall :location (decode 'vec2 location)

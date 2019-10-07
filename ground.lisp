@@ -1,5 +1,6 @@
 (in-package #:org.shirakumo.fraf.ld45)
 
+(define-image intro #p"intro.png")
 (define-image map1 #p"map1.png")
 (define-image map2 #p"map2.png")
 (define-image map3 #p"map3.png")

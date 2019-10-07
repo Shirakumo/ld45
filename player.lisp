@@ -15,7 +15,7 @@
   ((name :initform :player)
    (texture :initform (asset 'ld45 'player))
    (move-timer :initform 0 :accessor move-timer)
-   (capabilities :initarg :capabilities :initform *capabilities* :accessor capabilities)
+   (capabilities :initarg :capabilities :initform () :accessor capabilities)
    (interactable :initform NIL :accessor interactable)
    (viewcone :initform (make-instance 'sector) :reader viewcone))
   (:default-initargs
@@ -45,7 +45,7 @@
     (flet ((move (speed)
              (loop for device in (cl-gamepad:devices)
                    for move = (vec (cl-gamepad:axis device 0)
-                                   (- (cl-gamepad:axis device 1)))
+                                   (cl-gamepad:axis device 1))
                    do (when (< 0.3 (vlength move))
                         (setf (vx move) (* (vx move) (vx move) (signum (vx move))))
                         (setf (vy move) (* (vy move) (vy move) (signum (vy move))))
