@@ -34,9 +34,9 @@
                                      :capabilities (or capabilities *capabilities*))))
 
 (define-decoder (goal v0) (data _p)
-  (destructuring-bind (&key location reset) data
+  (destructuring-bind (&key location clear-capabilities) data
     (make-instance (class-of goal) :location (decode 'vec2 location)
-                                   :reset reset)))
+                                   :clear-capabilities clear-capabilities)))
 
 (define-decoder (wall v0) (data _p)
   (destructuring-bind (&key size location) data

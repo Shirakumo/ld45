@@ -2,14 +2,14 @@
 
 (define-shader-subject goal (vertex-entity moving solid)
   ((vertex-array :initform (asset 'ld45 'unit))
-   (reset :initform NIL :initarg :reset :accessor reset)))
+   (clear-capabilities :initform NIL :initarg :clear-capabilities :accessor clear-capabilities)))
 
 (defmethod collide ((player player) (goal goal) hit)
   (let* ((main (handler *context*))
          (next-level-name (second (member (current-level-name main)
                                           (level-names main)
                                           :test #'string=))))
-    (if (reset goal)
+    (if (clear-capabilities goal)
         (setf *capabilities* NIL)
         (setf *capabilities* (capabilities player)))
     (when next-level-name

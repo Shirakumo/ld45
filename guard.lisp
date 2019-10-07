@@ -103,7 +103,7 @@
        (decf (look-timer guard) dt)
        (let* ((progress (* (/ (mod (look-timer guard) +guard-scan-time+) +guard-scan-time+) PIF 2))
               (angle (+ (angle guard) (* +guard-sway-aperture+ (sin progress)))))
-         (setf (direction (viewcone guard))  (angle-point angle)))
+         (setf (direction (viewcone guard)) (angle-point angle)))
        (when (< (look-timer guard) 0)
          (when (/= 0 (length route))
            (incf (route-index guard) (route-direction guard)))

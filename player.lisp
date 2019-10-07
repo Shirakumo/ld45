@@ -111,6 +111,7 @@
                (< (v. (angle-point (angle entity))
                       (nvunit (v- (location player) (location entity))))
                   +takedown-dot-threshold+))
+      (print :a)
       (down entity)
       ;; You can only take down one at a time
       (for:end-for))))
@@ -152,10 +153,15 @@
 (defmethod collide ((bullet bullet) (guard guard) hit)
   (unless (eq (state guard) :down)
     (down guard)
-    (leave bullet +world+)))
+    (leave bullet +world+)
+    T))
 
 (defmethod collide ((bullet bullet) (wall wall) hit)
-  (leave bullet +world+))
+  (leave bullet +world+)
+  T)
+
+(defmethod collide ((bullet bullet) thing hit)
+  NIL)
 
 (define-handler (player aim) (ev)
   (when (and (eql NIL (state player))
