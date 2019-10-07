@@ -57,6 +57,7 @@
        (floor (vy2 vec) divisor)))
 
 (defun nvfloor (vec &optional (divisor 1))
+  (declare (type vec2 vec))
   (vsetf vec
          (floor (vx2 vec) divisor)
          (floor (vy2 vec) divisor)))
