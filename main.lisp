@@ -49,4 +49,4 @@
     (connect (port v-blur 'color) (port light 'fog) scene)))
 
 (defun launch (&optional world)
-  (trial:launch 'main :world world :level-names '("intro/" "map1/" "map2/" "map3/")))
+  (trial:launch 'main :world world :level-names '("credits/" "intro/" "map1/" "map2/" "map3/" "credits/")))

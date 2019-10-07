@@ -1,0 +1,7 @@
+(ground :texture (ld45 credits))
+(wall :location (336.0 0.0) :size (32.0 1024.0))
+(wall :location (-336.0 0.0) :size (32.0 1024.0))
+(wall :location (0.0 -528.0) :size (704.0 32.0))
+(wall :location (0.0 528.0) :size (704.0 32.0))
+(goal :location (-32.0 448.0))
+(player :location (9.799997 -395.80045) :capabilities (:clairvoyance))
