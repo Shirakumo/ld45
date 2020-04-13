@@ -17,7 +17,7 @@
 (define-handler (camera trial:tick) (ev tt)
   (let ((loc (location camera))
         (int (intended-location camera)))
-    (unless (active-p (unit :editor T))
+    (unless (and (unit :editor T) (active-p (unit :editor T)))
       (when (target camera)
         (let ((tar (location (target camera))))
           (vsetf int (vx tar) (vy tar))))

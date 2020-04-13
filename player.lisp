@@ -43,7 +43,7 @@
   (let* ((vel (velocity player))
          (dt (dt ev)))
     (flet ((move (speed)
-             (loop for device in (cl-gamepad:devices)
+             (loop for device in (cl-gamepad:list-devices)
                    for move = (vec (cl-gamepad:axis device 0)
                                    (cl-gamepad:axis device 1))
                    do (when (< 0.3 (vlength move))
