@@ -1,5 +1,5 @@
 (defsystem ld45
-  :author "Nicolas Hafner <shinmera@tymoon.eu>, Joram Schrijver <i@joram.io>"
+  :author "Yukari Hafner <shinmera@tymoon.eu>, Joram Schrijver <i@joram.io>"
   :homepage "https://github.com/shirakumo/ld45"
   :source-control (:git "https://github.com/shirakumo/ld45")
   :license "zlib"
